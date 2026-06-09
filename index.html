@@ -1,509 +1,468 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Endless 樂團數據儀表板</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.min.js"></script>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{background:#0A0A0A;color:#E5E5E5;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif}
-    a{text-decoration:none;color:inherit}
-    input::placeholder{color:#525252}
-    textarea::placeholder{color:#525252}
-    textarea{resize:none}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-    .fade-in{animation:fadeIn .35s ease both}
-    ::-webkit-scrollbar{width:5px}
-    ::-webkit-scrollbar-track{background:#0A0A0A}
-    ::-webkit-scrollbar-thumb{background:#262626;border-radius:3px}
-    .kpi-card{transition:transform .2s,box-shadow .2s}
-    .kpi-card:hover{transform:translateY(-4px);box-shadow:0 14px 36px rgba(0,0,0,.6)}
-    .press-card{transition:transform .2s,box-shadow .2s}
-    .press-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.5)}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Endless 樂團數據儀表板</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0A0A;color:#E5E5E5;font-family:'Inter',-apple-system,sans-serif;min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit}
+input,textarea{font-family:inherit}
+input::placeholder,textarea::placeholder{color:#525252}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fade-in{animation:fadeIn .35s ease both}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0A0A0A}
+::-webkit-scrollbar-thumb{background:#262626;border-radius:3px}
+
+/* Layout */
+#app{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+header{position:sticky;top:0;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);border-bottom:1px solid #171717;z-index:100}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:0 20px;height:62px;flex-wrap:wrap}
+
+/* Cards */
+.card{background:#171717;border:1px solid #262626;border-radius:14px;padding:1rem 1.2rem}
+.kpi-card{background:#171717;border:1px solid #262626;border-radius:14px;padding:1rem 1.2rem;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.kpi-card:hover{transform:translateY(-4px);box-shadow:0 14px 36px rgba(0,0,0,.6)}
+.press-card{background:#171717;border:1px solid #262626;border-left:3px solid #7C3AED;border-radius:12px;padding:12px 14px;margin-bottom:10px;transition:transform .2s,box-shadow .2s}
+.press-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.5)}
+
+/* Grid */
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:20px}
+.grid-press{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+
+/* Bio */
+.bio-block{background:#111;border:1px solid #1F1F1F;border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:20px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+
+/* Spinner */
+.spinner{width:36px;height:36px;border:2px solid #262626;border-top:2px solid #7C3AED;border-radius:50%;animation:spin .8s linear infinite}
+
+/* Buttons */
+.btn{border:none;border-radius:8px;padding:6px 14px;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#7C3AED;color:#fff}
+.btn-primary:hover{background:#6D28D9}
+.btn-secondary{background:#171717;border:1px solid #262626;color:#A3A3A3}
+.btn-icon{background:none;border:1px solid #262626;border-radius:8px;padding:6px 8px;color:#525252}
+
+/* Chart */
+.chart-wrap{height:150px;margin-top:12px;position:relative}
+.chart-svg{width:100%;height:100%}
+
+/* Section label */
+.sec-label{display:flex;align-items:center;gap:7px;margin-bottom:12px}
+.sec-label span.cnt{font-size:10px;color:#525252;background:#1F1F1F;border-radius:5px;padding:2px 7px}
+.tag{font-size:11px;border-radius:6px;padding:3px 10px;font-weight:600}
+
+/* AI result */
+.ai-section-title{font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:8px}
+.ai-quick-item{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+.ai-quick-num{width:18px;height:18px;border-radius:5px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+</style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useEffect,useCallback,useRef} = React;
-const {LineChart,Line,XAxis,YAxis,Tooltip,ResponsiveContainer,CartesianGrid} = Recharts;
 
-// ══ 設定 ══════════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxG8gHyA2w1bJjTIvqSD2HN1wJRHBgxc9aV5wg5v-yAzZaQl0U5GX98pxILCySmMa5e/exec";
+<header>
+  <div class="header-inner">
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#7C3AED,#EC4899);display:flex;align-items:center;justify-content:center;font-size:17px">🎵</div>
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px">Endless</div>
+        <div id="h-subtitle" style="font-size:10px;color:#525252;margin-top:-2px">樂團數據儀表板</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:140px">
+      <div style="display:flex;align-items:center;gap:7px;background:#171717;border:1px solid #262626;border-radius:9px;padding:7px 12px">
+        <span style="font-size:13px;color:#525252">🔍</span>
+        <input id="search" placeholder="搜尋新聞、靈感…" style="background:none;border:none;outline:none;color:#E5E5E5;font-size:12px;width:100%"/>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <span id="h-updated" style="font-size:10px;color:#404040"></span>
+      <button class="btn-icon" onclick="loadData()" title="重新載入">↻</button>
+      <button class="btn btn-secondary" onclick="toggleLang()">🌐 <span id="lang-btn">EN</span></button>
+    </div>
+  </div>
+</header>
 
-const BAND_INFO = {
-  name: "Endless",
-  tagline: "台灣獨立搖滾樂團",
-  bio: "Endless 是來自台灣的獨立搖滾樂團，以融合電吉他、電子音效與詩意歌詞著稱。自 2020 年成立以來，以強烈的舞台張力與影像化的 MV 製作獲得廣泛關注。",
-  links: {
-    instagram: "https://instagram.com",
-    spotify: "https://open.spotify.com",
-    youtube: "https://youtube.com",
-  }
+<div id="app">
+  <div id="loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:16px">
+    <div class="spinner"></div>
+    <span style="color:#525252;font-size:13px">資料載入中…</span>
+  </div>
+  <div id="main" style="display:none"></div>
+</div>
+
+<script>
+// ══ Config ═══════════════════════════════════════════
+const GAS_URL="https://script.google.com/macros/s/AKfycbxG8gHyA2w1bJjTIvqSD2HN1wJRHBgxc9aV5wg5v-yAzZaQl0U5GX98pxILCySmMa5e/exec";
+const BAND={
+  name:"Endless",tagline:"台灣獨立搖滾樂團",
+  bio:"Endless 是來自台灣的獨立搖滾樂團，以融合電吉他、電子音效與詩意歌詞著稱。自 2020 年成立以來，以強烈的舞台張力與影像化的 MV 製作獲得廣泛關注。",
+  ig:"https://instagram.com",spotify:"https://open.spotify.com",yt:"https://youtube.com"
+};
+const T={
+  zh:{subtitle:"樂團數據儀表板",search:"搜尋新聞、靈感…",langBtn:"EN",
+    igFans:"IG 粉絲數",sp:"Spotify 月聽眾量",ytSubs:"YouTube 訂閱數",ytTotal:"YouTube 總觀看量",
+    top3:"Spotify 本月 Top 3",playlist:"指標歌單紀錄",press:"媒體新聞牆",campaigns:"行銷靈感庫",
+    pending:"待更新",monthDelta:"月增減",history:"歷史趨勢",noData:"暫無資料",
+    updated:"最後更新",retry:"重試",error:"資料讀取失敗",
+    aiBtn:"✦ AI 生成行銷建議",aiLoading:"AI 分析中…",aiPlaceholder:"點擊按鈕，AI 將根據本月數據自動生成行銷建議",
+    quick:"快速建議",deep:"深度分析",noHistory:"歷史資料不足（需 2 筆以上）"},
+  en:{subtitle:"Band Analytics Dashboard",search:"Search news, ideas…",langBtn:"中文",
+    igFans:"IG Followers",sp:"Spotify Monthly Listeners",ytSubs:"YouTube Subscribers",ytTotal:"YouTube Total Views",
+    top3:"Spotify Top 3 This Month",playlist:"Playlist Log",press:"Press News",campaigns:"Campaigns",
+    pending:"Pending",monthDelta:"Monthly Δ",history:"Historical Trend",noData:"No data",
+    updated:"Last updated",retry:"Retry",error:"Failed to load data",
+    aiBtn:"✦ Generate AI Suggestions",aiLoading:"AI thinking…",aiPlaceholder:"Click the button to generate AI marketing suggestions based on this month's data.",
+    quick:"Quick Tips",deep:"Deep Analysis",noHistory:"Not enough history (need 2+ months)"}
 };
 
-const T = {
-  zh:{
-    title:"Endless",subtitle:"樂團數據儀表板",search:"搜尋新聞、靈感…",
-    igFans:"IG 粉絲數",spotifyListeners:"Spotify 月聽眾量",
-    ytSubs:"YouTube 訂閱數",ytTotal:"YouTube 總觀看量",
-    topTracks:"Spotify 本月 Top 3",playlistLog:"指標歌單紀錄",
-    press:"媒體新聞牆",campaigns:"行銷靈感庫",
-    loading:"資料載入中…",error:"資料讀取失敗，請稍後再試。",
-    retry:"重試",noData:"暫無資料",switchLang:"EN",
-    updated:"最後更新",pending:"待更新",
-    history:"歷史趨勢",hideHistory:"收起",
-    about:"關於 Endless",
-    aiBtn:"✦ AI 生成行銷建議",aiLoading:"AI 分析中…",
-    quick:"快速建議",deep:"深度分析",
-    monthlyDelta:"月增減",
-  },
-  en:{
-    title:"Endless",subtitle:"Band Analytics Dashboard",search:"Search news, ideas…",
-    igFans:"IG Followers",spotifyListeners:"Spotify Monthly Listeners",
-    ytSubs:"YouTube Subscribers",ytTotal:"YouTube Total Views",
-    topTracks:"Spotify Top 3 This Month",playlistLog:"Playlist Log",
-    press:"Press News",campaigns:"Campaigns",
-    loading:"Loading data…",error:"Failed to load data. Please try again.",
-    retry:"Retry",noData:"No data available",switchLang:"中文",
-    updated:"Last updated",pending:"Pending",
-    history:"Historical Trend",hideHistory:"Hide",
-    about:"About Endless",
-    aiBtn:"✦ Generate AI Suggestions",aiLoading:"AI thinking…",
-    quick:"Quick Tips",deep:"Deep Analysis",
-    monthlyDelta:"Monthly Δ",
-  }
-};
+let lang="zh";
+let allRows=[];
 
-// ══ Helpers ═══════════════════════════════════════════
+// ══ Lang ══════════════════════════════════════════════
+function toggleLang(){lang=lang==="zh"?"en":"zh";renderAll();}
+function t(k){return T[lang][k]||k;}
+
+// ══ Helpers ════════════════════════════════════════════
 function fmtNum(v){
   if(v===null||v===undefined||v===""||v==="-")return"—";
   const n=parseInt(String(v).replace(/,/g,""))||0;
-  if(n===0)return"—";
-  if(Math.abs(n)>=10000)return(n/10000).toFixed(1)+"萬";
-  return n.toLocaleString();
+  if(!n)return"—";
+  return Math.abs(n)>=10000?(n/10000).toFixed(1)+"萬":n.toLocaleString();
 }
 function fmtDelta(v){
-  if(!v||v==="-"||v===0)return null;
-  const n=parseInt(String(v).replace(/,/g,""))||0;
-  if(n>0)return{txt:"+"+n.toLocaleString(),color:"#22C55E"};
-  if(n<0)return{txt:n.toLocaleString(),color:"#EF4444"};
+  const n=parseInt(String(v||"").replace(/,/g,""))||0;
+  if(n>0)return{txt:"+"+n.toLocaleString(),c:"#22C55E"};
+  if(n<0)return{txt:n.toLocaleString(),c:"#EF4444"};
   return null;
 }
 function fmtDate(raw){
   if(!raw)return"";
   const d=new Date(raw);
-  if(isNaN(d))return String(raw).slice(0,10);
-  return`${d.getFullYear()}/${d.getMonth()+1}`;
+  return isNaN(d)?String(raw).slice(0,7):`${d.getFullYear()}/${d.getMonth()+1}`;
 }
 function parsePress(raw){
   if(!raw)return[];
   return String(raw).split(/\n/).map(line=>{
-    const urlMatch=line.match(/\((https?:\/\/[^)]+)\)/);
+    const um=line.match(/\((https?:\/\/[^)]+)\)/);
     const title=line.replace(/^\d+\.\s*/,"").replace(/\s*\(https?:\/\/[^)]+\)/,"").replace(/\s*中的YouTube影片/,"").replace(/\s*-\s*[^-（(]+$/,"").trim();
-    const sourceMatch=line.match(/-\s*([^(-]+?)(?:\s*\(|$)/);
-    return{title,source:sourceMatch?sourceMatch[1].trim():"",url:urlMatch?urlMatch[1]:""};
+    const sm=line.match(/-\s*([^(-]+?)(?:\s*\(|$)/);
+    return{title,source:sm?sm[1].trim():"",url:um?um[1]:""};
   }).filter(p=>p.title);
 }
 function parseList(raw){
   if(!raw)return[];
   return String(raw).split(/[\n；;]+/).map(s=>s.trim()).filter(Boolean);
 }
-
-// ══ Data hook ═════════════════════════════════════════
-function useData(){
-  const [rows,setRows]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [error,setError]=useState(null);
-  const [lastUpdated,setLastUpdated]=useState(null);
-
-  const load=useCallback(async()=>{
-    setLoading(true);setError(null);
-    try{
-      const res=await fetch(GAS_URL);
-      if(!res.ok)throw new Error(`HTTP ${res.status}`);
-      const json=await res.json();
-      setRows(Array.isArray(json)?json:[]);
-      setLastUpdated(new Date().toLocaleDateString("zh-TW"));
-    }catch(e){setError(e.message);}
-    finally{setLoading(false);}
-  },[]);
-
-  useEffect(()=>{load();},[load]);
-  return{rows,loading,error,lastUpdated,refetch:load};
-}
-
-// Build latest aggregated row + all rows for history
-function buildData(rows){
-  if(!rows.length)return{agg:{},history:[]};
-  const textMerge=["行銷靈感庫","媒體新聞牆","Spotify 本月熱門 Top 3","Spotify 指標歌單紀錄"];
-  // latest: last row wins for each field
+function buildAgg(rows){
   const agg={};
+  const textMerge=["行銷靈感庫","媒體新聞牆","Spotify 本月熱門 Top 3","Spotify 指標歌單紀錄"];
   rows.forEach(row=>{
     Object.entries(row).forEach(([k,v])=>{
       if(v===undefined||v===null||String(v).trim()===""||v==="-")return;
       if(textMerge.includes(k)){agg[k]=String(v);}
-      else{agg[k]=v;}
+      else agg[k]=v;
     });
   });
-  // history: one entry per unique date key
-  const seen={};
-  const history=[];
+  return agg;
+}
+function buildHistory(rows){
+  const seen={};const h=[];
   rows.forEach(row=>{
-    const dateKey=Object.values(row)[0];
-    if(!dateKey||seen[dateKey])return;
-    seen[dateKey]=true;
-    history.push({
-      date:fmtDate(dateKey),
+    const dk=Object.values(row)[0];
+    if(!dk||seen[dk])return;
+    seen[dk]=true;
+    h.push({
+      date:fmtDate(dk),
       ig:parseInt(String(row["IG 粉絲數"]||0).replace(/,/g,""))||0,
-      spotify:parseInt(String(row["Spotify 月聽眾量"]||0).replace(/,/g,""))||0,
-      ytSubs:parseInt(String(row["YouTube 訂閱數"]||0).replace(/,/g,""))||0,
-      ytTotal:parseInt(String(row["YouTube 總觀看量"]||0).replace(/,/g,""))||0,
+      sp:parseInt(String(row["Spotify 月聽眾量"]||0).replace(/,/g,""))||0,
+      ytS:parseInt(String(row["YouTube 訂閱數"]||0).replace(/,/g,""))||0,
+      ytT:parseInt(String(row["YouTube 總觀看量"]||0).replace(/,/g,""))||0,
     });
   });
-  return{agg,history:history.reverse()};
+  return h.reverse();
 }
 
+// ══ Mini SVG Chart ════════════════════════════════════
+function miniChart(data,field,color){
+  const vals=data.map(d=>d[field]);
+  const hasData=vals.some(v=>v>0);
+  if(!hasData||data.length<2)return`<div style="color:#525252;font-size:12px;text-align:center;padding:18px 0">${t("noHistory")}</div>`;
+  const W=560,H=120,PAD={t:8,r:10,b:32,l:52};
+  const cW=W-PAD.l-PAD.r,cH=H-PAD.t-PAD.b;
+  const min=Math.min(...vals),max=Math.max(...vals);
+  const range=max-min||1;
+  const xStep=cW/(data.length-1);
+  const pts=data.map((d,i)=>{
+    const x=PAD.l+i*xStep;
+    const y=PAD.t+cH-(d[field]-min)/range*cH;
+    return{x,y,v:d[field],date:d.date};
+  });
+  const polyline=pts.map(p=>`${p.x},${p.y}`).join(" ");
+  const area=`${PAD.l},${PAD.t+cH} `+polyline+` ${PAD.l+cW},${PAD.t+cH}`;
+  const yTicks=[min,min+range/2,max].map(v=>Math.abs(v)>=10000?(v/10000).toFixed(1)+"萬":Math.round(v).toLocaleString());
+  const yCoords=[PAD.t+cH,PAD.t+cH/2,PAD.t];
+
+  let dots=pts.map((p,i)=>`
+    <circle cx="${p.x}" cy="${p.y}" r="4" fill="${color}" stroke="#171717" stroke-width="2"
+      onmouseover="showTip(evt,'${p.date}: ${fmtNum(p.v)}')"
+      onmouseout="hideTip()"/>
+  `).join("");
+
+  return`<div style="position:relative">
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;overflow:visible">
+    <defs><linearGradient id="cg${field}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".18"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${[0,.5,1].map((_,i)=>`<line x1="${PAD.l}" y1="${yCoords[i]}" x2="${PAD.l+cW}" y2="${yCoords[i]}" stroke="#1F1F1F" stroke-width="1"/>`).join("")}
+    ${yTicks.map((tk,i)=>`<text x="${PAD.l-6}" y="${yCoords[i]+4}" text-anchor="end" font-size="10" fill="#525252">${tk}</text>`).join("")}
+    ${data.map((d,i)=>`<text x="${PAD.l+i*xStep}" y="${H-6}" text-anchor="middle" font-size="10" fill="#525252">${d.date}</text>`).join("")}
+    <polygon points="${area}" fill="url(#cg${field})"/>
+    <polyline points="${polyline}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>
+  <div id="tip" style="display:none;position:absolute;background:#262626;color:#E5E5E5;font-size:11px;padding:4px 8px;border-radius:6px;pointer-events:none;top:0;left:0"></div>
+</div>`;
+}
+
+window.showTip=function(evt,text){
+  const tip=document.getElementById("tip");
+  if(!tip)return;
+  const rect=evt.target.closest("div").getBoundingClientRect();
+  const cx=evt.clientX-rect.left,cy=evt.clientY-rect.top;
+  tip.style.display="block";tip.style.left=(cx+8)+"px";tip.style.top=(cy-24)+"px";tip.textContent=text;
+};
+window.hideTip=function(){const t=document.getElementById("tip");if(t)t.style.display="none";};
+
+// ══ KPI Card ══════════════════════════════════════════
+function kpiCard(id,icon,accent,label,value,deltaRaw,pending,histHtml){
+  const d=fmtDelta(deltaRaw);
+  const dim=value==="—"?"#404040":"#E5E5E5";
+  return`<div class="kpi-card" id="kpi-${id}" onclick="toggleChart('${id}')">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:34px;height:34px;border-radius:9px;background:${accent}22;display:flex;align-items:center;justify-content:center;font-size:16px">${icon}</div>
+        <span style="font-size:11px;color:#737373">${label}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        ${pending?`<span style="font-size:10px;color:#525252;background:#1F1F1F;border-radius:5px;padding:2px 7px">${t("pending")}</span>`:""}
+        <span id="arr-${id}" style="font-size:11px;color:#525252">▼</span>
+      </div>
+    </div>
+    <div style="font-size:28px;font-weight:800;letter-spacing:-.5px;color:${dim}">${value}</div>
+    ${d?`<div style="font-size:12px;font-weight:600;margin-top:5px;color:${d.c}">${d.txt} ${t("monthDelta")}</div>`:""}
+    <div id="chart-${id}" style="display:none;margin-top:4px">
+      <div style="font-size:11px;color:#525252;margin:10px 0 2px">${t("history")}</div>
+      ${histHtml}
+    </div>
+  </div>`;
+}
+window.toggleChart=function(id){
+  const el=document.getElementById("chart-"+id);
+  const arr=document.getElementById("arr-"+id);
+  if(!el)return;
+  const open=el.style.display==="none";
+  el.style.display=open?"block":"none";
+  if(arr)arr.textContent=open?"▲":"▼";
+};
+
 // ══ AI Suggestions ════════════════════════════════════
-async function fetchAISuggestions(agg,lang){
-  const metrics=`
-IG粉絲: ${agg["IG 粉絲數"]||"未填"} (月增: ${agg["IG 月增減"]||"—"})
+window.generateAI=async function(){
+  const btn=document.getElementById("ai-btn");
+  const res=document.getElementById("ai-result");
+  if(!btn||!res)return;
+  btn.disabled=true;btn.innerHTML=`<span class="spinner" style="width:12px;height:12px;border-width:1.5px"></span>${t("aiLoading")}`;
+  res.innerHTML=`<div style="color:#525252;font-size:12px;animation:pulse 1s infinite">${t("aiLoading")}</div>`;
+
+  const agg=buildAgg(allRows);
+  const metrics=`IG粉絲: ${agg["IG 粉絲數"]||"未填"} (月增: ${agg["IG 月增減"]||"—"})
 Spotify月聽眾: ${agg["Spotify 月聽眾量"]||"未填"} (月增: ${agg["Spotify 月聽眾量增減"]||"—"})
 YouTube訂閱: ${agg["YouTube 訂閱數"]||"未填"} (月增: ${agg["YouTube 月訂閱增減"]||"—"})
 YouTube總觀看: ${agg["YouTube 總觀看量"]||"未填"}
 本月媒體報導: ${agg["媒體新聞牆"]||"無"}`;
 
-  const sysPrompt=lang==="zh"
+  const sysPr=lang==="zh"
     ?`你是台灣獨立音樂的資深行銷顧問，專精數位行銷與社群經營。根據樂團 Endless 的當月數據，提供精準的行銷建議。請分兩區塊回覆：
-【快速建議】3 條可立即執行的具體行動（每條一行，50字內）
+【快速建議】3 條可立即執行的具體行動（每條一行，50字內，用數字編號）
 【深度分析】2~3 段深度洞察，包含數據解讀、市場機會與中長期策略建議。
 全程使用繁體中文，語氣專業但親切。`
-    :`You are a senior music marketing consultant specializing in digital strategy for indie artists. Based on the monthly data for band Endless, provide precise marketing suggestions in two sections:
-[Quick Tips] 3 immediately actionable items (one line each, under 60 chars)
-[Deep Analysis] 2~3 paragraphs of insights including data interpretation, market opportunities and mid-term strategy.
-Use professional but approachable English.`;
+    :`You are a senior music marketing consultant. Provide marketing suggestions for band Endless in two sections:
+[Quick Tips] 3 immediately actionable items (one line each, numbered)
+[Deep Analysis] 2~3 paragraphs of insights including data interpretation, opportunities and strategy.
+Use professional English.`;
 
-  const res=await fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      model:"claude-sonnet-4-20250514",
-      max_tokens:1000,
-      system:sysPrompt,
-      messages:[{role:"user",content:`以下是 Endless 樂團本月數據，請給出行銷建議：\n${metrics}`}]
-    })
-  });
-  if(!res.ok)throw new Error(`API ${res.status}`);
-  const data=await res.json();
-  return(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",max_tokens:1000,
+        system:sysPr,
+        messages:[{role:"user",content:`以下是 Endless 樂團本月數據，請給出行銷建議：\n${metrics}`}]
+      })
+    });
+    if(!r.ok)throw new Error("API "+r.status);
+    const data=await r.json();
+    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+    renderAIResult(text,res);
+  }catch(e){
+    res.innerHTML=`<div style="color:#EF4444;font-size:12px">AI 服務暫時無法使用，請稍後再試。(${e.message})</div>`;
+  }finally{
+    btn.disabled=false;btn.innerHTML=t("aiBtn");
+  }
+};
+
+function renderAIResult(text,el){
+  const qm=text.match(/【快速建議】([\s\S]*?)(?=【深度分析】|$)/)||text.match(/\[Quick Tips\]([\s\S]*?)(?=\[Deep Analysis\]|$)/);
+  const dm=text.match(/【深度分析】([\s\S]*?)$/)||text.match(/\[Deep Analysis\]([\s\S]*?)$/);
+  const qLines=(qm?.[1]||"").trim().split("\n").filter(Boolean);
+  const dText=(dm?.[1]||"").trim();
+  let html="";
+  if(qLines.length){
+    html+=`<div class="ai-section-title" style="color:#F59E0B">⚡ ${t("quick")}</div>`;
+    html+=qLines.map((l,i)=>`<div class="ai-quick-item">
+      <div class="ai-quick-num" style="background:#F59E0B22;color:#F59E0B">${i+1}</div>
+      <div style="font-size:13px;color:#E5E5E5;line-height:1.6">${l.replace(/^\d+[.、]/,"").trim()}</div>
+    </div>`).join("");
+  }
+  if(dText){
+    html+=`<div class="ai-section-title" style="color:#7C3AED;margin-top:14px">🔍 ${t("deep")}</div>`;
+    html+=dText.split(/\n\n+/).filter(Boolean).map(p=>`<p style="font-size:13px;color:#A3A3A3;line-height:1.75;margin-bottom:10px">${p.trim()}</p>`).join("");
+  }
+  if(!html)html=`<p style="font-size:13px;color:#A3A3A3;line-height:1.75;white-space:pre-wrap">${text}</p>`;
+  el.innerHTML=`<div class="fade-in">${html}</div>`;
 }
 
-// ══ UI Components ══════════════════════════════════════
+// ══ Render ════════════════════════════════════════════
+function renderAll(){
+  // Update header i18n
+  document.getElementById("h-subtitle").textContent=t("subtitle");
+  document.getElementById("search").placeholder=t("search");
+  document.getElementById("lang-btn").textContent=t("langBtn");
 
-function HistoryChart({history,field,color,label}){
-  if(!history||history.length<2)return(
-    <div style={{color:"#525252",fontSize:12,textAlign:"center",padding:"20px 0"}}>歷史資料不足（需 2 筆以上）</div>
-  );
-  const hasData=history.some(h=>h[field]>0);
-  if(!hasData)return(
-    <div style={{color:"#525252",fontSize:12,textAlign:"center",padding:"20px 0"}}>尚無歷史數據</div>
-  );
-  return(
-    <div style={{height:160,marginTop:12}}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={history} margin={{top:4,right:8,left:0,bottom:4}}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1F1F1F"/>
-          <XAxis dataKey="date" tick={{fill:"#525252",fontSize:11}} axisLine={false} tickLine={false}/>
-          <YAxis tick={{fill:"#525252",fontSize:11}} axisLine={false} tickLine={false} width={48}
-            tickFormatter={v=>v>=10000?(v/10000).toFixed(1)+"萬":v.toLocaleString()}/>
-          <Tooltip
-            contentStyle={{background:"#171717",border:"1px solid #262626",borderRadius:8,fontSize:12}}
-            labelStyle={{color:"#A3A3A3"}}
-            itemStyle={{color:color}}
-            formatter={v=>[v>=10000?(v/10000).toFixed(1)+"萬":v.toLocaleString(),label]}
-          />
-          <Line type="monotone" dataKey={field} stroke={color} strokeWidth={2}
-            dot={{fill:color,r:3}} activeDot={{r:5}}/>
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
+  if(!allRows.length)return;
+  const agg=buildAgg(allRows);
+  const hist=buildHistory(allRows);
+  const search=document.getElementById("search").value.toLowerCase();
 
-function KpiCard({icon,accent,label,value,delta,pending,historyData,histField,histLabel,t}){
-  const [open,setOpen]=useState(false);
-  const d=delta!==undefined?fmtDelta(delta):null;
-  return(
-    <div className="kpi-card" style={{background:"#171717",border:"1px solid #262626",borderRadius:14,padding:"1rem 1.2rem",cursor:"pointer"}}
-      onClick={()=>setOpen(o=>!o)}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-        <div style={{display:"flex",alignItems:"center",gap:9}}>
-          <div style={{width:34,height:34,borderRadius:9,background:accent+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{icon}</div>
-          <span style={{fontSize:11,color:"#737373"}}>{label}</span>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          {pending&&<span style={{fontSize:10,color:"#525252",background:"#1F1F1F",borderRadius:5,padding:"2px 7px"}}>{t.pending}</span>}
-          <span style={{fontSize:11,color:"#525252"}}>{open?"▲":"▼"}</span>
-        </div>
-      </div>
-      <div style={{fontSize:28,fontWeight:800,letterSpacing:"-0.5px",color:value==="—"?"#404040":"#E5E5E5"}}>{value}</div>
-      {d&&<div style={{fontSize:12,fontWeight:600,marginTop:5,color:d.color}}>{d.txt} {t.monthlyDelta}</div>}
-      {open&&(
-        <div onClick={e=>e.stopPropagation()}>
-          <div style={{fontSize:11,color:"#525252",marginTop:14,marginBottom:2}}>{t.history}</div>
-          <HistoryChart history={historyData} field={histField} color={accent} label={histLabel}/>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PressCard({item}){
-  return(
-    <div className="press-card" style={{background:"#171717",border:"1px solid #262626",borderLeft:"3px solid #7C3AED",borderRadius:12,padding:"12px 14px",marginBottom:10}}>
-      <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}>
-        <div style={{flex:1}}>
-          <div style={{fontSize:13,fontWeight:600,color:"#E5E5E5",lineHeight:1.5,marginBottom:4}}>{item.title}</div>
-          {item.source&&<div style={{fontSize:11,color:"#525252"}}>{item.source}</div>}
-        </div>
-        {item.url&&<a href={item.url} target="_blank" rel="noreferrer" style={{color:"#7C3AED",flexShrink:0,fontSize:14,marginTop:2}}>↗</a>}
-      </div>
-    </div>
-  );
-}
-
-function AISuggestions({agg,lang,t}){
-  const [result,setResult]=useState("");
-  const [loading,setLoading]=useState(false);
-  const [error,setError]=useState("");
-
-  const generate=async()=>{
-    setLoading(true);setError("");setResult("");
-    try{
-      const text=await fetchAISuggestions(agg,lang);
-      setResult(text);
-    }catch(e){setError("AI 服務暫時無法使用，請稍後再試。");}
-    finally{setLoading(false);}
-  };
-
-  // Parse quick vs deep sections
-  const quickMatch=result.match(/【快速建議】([\s\S]*?)(?=【深度分析】|$)/)||result.match(/\[Quick Tips\]([\s\S]*?)(?=\[Deep Analysis\]|$)/);
-  const deepMatch=result.match(/【深度分析】([\s\S]*?)$/)||result.match(/\[Deep Analysis\]([\s\S]*?)$/);
-  const quickLines=(quickMatch?.[1]||"").trim().split("\n").filter(Boolean);
-  const deepText=(deepMatch?.[1]||"").trim();
-
-  return(
-    <div style={{background:"#171717",border:"1px solid #262626",borderRadius:14,padding:"1.1rem 1.2rem"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:7}}>
-          <span style={{fontSize:14}}>💡</span>
-          <span style={{fontWeight:700,fontSize:13}}>{t.campaigns}</span>
-        </div>
-        <button onClick={generate} disabled={loading}
-          style={{display:"flex",alignItems:"center",gap:6,background:loading?"#1F1F1F":"#7C3AED",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:loading?"not-allowed":"pointer",opacity:loading?.7:1,transition:"background .2s"}}>
-          {loading?<><span style={{width:12,height:12,border:"1.5px solid #ffffff44",borderTop:"1.5px solid #fff",borderRadius:"50%",display:"inline-block",animation:"spin .7s linear infinite"}}></span>{t.aiLoading}</>:<>{t.aiBtn}</>}
-        </button>
-      </div>
-
-      {error&&<div style={{fontSize:12,color:"#EF4444",marginBottom:10}}>{error}</div>}
-
-      {!result&&!loading&&(
-        <div style={{fontSize:12,color:"#525252",textAlign:"center",padding:"20px 0"}}>點擊按鈕，AI 將根據本月數據自動生成行銷建議</div>
-      )}
-
-      {result&&(
-        <div className="fade-in">
-          {quickLines.length>0&&(
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:11,color:"#F59E0B",fontWeight:600,marginBottom:8,letterSpacing:"0.5px"}}>⚡ {t.quick}</div>
-              {quickLines.map((line,i)=>(
-                <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:6}}>
-                  <span style={{width:18,height:18,borderRadius:5,background:"#F59E0B22",color:"#F59E0B",fontSize:10,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</span>
-                  <div style={{fontSize:13,color:"#E5E5E5",lineHeight:1.6}}>{line.replace(/^\d+[\.\、]/,"").trim()}</div>
-                </div>
-              ))}
-            </div>
-          )}
-          {deepText&&(
-            <div>
-              <div style={{fontSize:11,color:"#7C3AED",fontWeight:600,marginBottom:8,letterSpacing:"0.5px"}}>🔍 {t.deep}</div>
-              {deepText.split("\n\n").filter(Boolean).map((para,i)=>(
-                <p key={i} style={{fontSize:13,color:"#A3A3A3",lineHeight:1.75,marginBottom:10}}>{para.trim()}</p>
-              ))}
-            </div>
-          )}
-          {(!quickLines.length&&!deepText)&&(
-            <p style={{fontSize:13,color:"#A3A3A3",lineHeight:1.75,whiteSpace:"pre-wrap"}}>{result}</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BandBio({t}){
-  const {name,tagline,bio,links}=BAND_INFO;
-  return(
-    <div style={{background:"#111",border:"1px solid #1F1F1F",borderRadius:14,padding:"1.2rem 1.4rem",marginBottom:20,display:"flex",gap:20,alignItems:"flex-start",flexWrap:"wrap"}}>
-      <div style={{width:52,height:52,borderRadius:14,background:"linear-gradient(135deg,#7C3AED,#EC4899)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>🎵</div>
-      <div style={{flex:1,minWidth:200}}>
-        <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:4,flexWrap:"wrap"}}>
-          <span style={{fontSize:18,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>{name}</span>
-          <span style={{fontSize:12,color:"#525252"}}>{tagline}</span>
-        </div>
-        <p style={{fontSize:13,color:"#A3A3A3",lineHeight:1.7,marginBottom:10}}>{bio}</p>
-        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          {[
-            {label:"Instagram",url:links.instagram,color:"#E1306C"},
-            {label:"Spotify",url:links.spotify,color:"#1DB954"},
-            {label:"YouTube",url:links.youtube,color:"#FF0000"},
-          ].map(({label,url,color})=>(
-            <a key={label} href={url} target="_blank" rel="noreferrer"
-              style={{fontSize:11,color,background:color+"18",border:`1px solid ${color}33`,borderRadius:6,padding:"3px 10px",fontWeight:600,transition:"opacity .2s"}}
-              onMouseEnter={e=>e.target.style.opacity=".7"} onMouseLeave={e=>e.target.style.opacity="1"}>
-              {label} ↗
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ══ App ════════════════════════════════════════════════
-function App(){
-  const [lang,setLang]=useState("zh");
-  const [search,setSearch]=useState("");
-  const t=T[lang];
-  const {rows,loading,error,lastUpdated,refetch}=useData();
-  const {agg,history}=buildData(rows);
-
-  const pressItems=parsePress(agg["媒體新聞牆"]);
+  const pressItems=parsePress(agg["媒体新聞牆"]||agg["媒體新聞牆"]);
   const top3=parseList(agg["Spotify 本月熱門 Top 3"]);
   const playlists=parseList(agg["Spotify 指標歌單紀錄"]);
+  const fPress=search?pressItems.filter(p=>(p.title+p.source).toLowerCase().includes(search)):pressItems;
 
-  const fPress=pressItems.filter(p=>!search||(p.title+p.source).toLowerCase().includes(search.toLowerCase()));
+  const igPend=!agg["IG 粉絲數"]||parseInt(agg["IG 粉絲數"]||0)===0;
+  const spPend=!agg["Spotify 月聽眾量"]||parseInt(agg["Spotify 月聽眾量"]||0)===0;
 
-  const igPending=!agg["IG 粉絲數"]||agg["IG 粉絲數"]===0;
-  const spPending=!agg["Spotify 月聽眾量"]||agg["Spotify 月聽眾量"]===0;
-
-  return(
-    <div style={{minHeight:"100vh",paddingBottom:60}}>
-      {/* ── Header ── */}
-      <div style={{borderBottom:"1px solid #171717",position:"sticky",top:0,background:"#0A0A0Aee",backdropFilter:"blur(12px)",zIndex:10}}>
-        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",gap:14,padding:"0 20px",height:62,flexWrap:"wrap"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            <div style={{width:34,height:34,borderRadius:9,background:"linear-gradient(135deg,#7C3AED,#EC4899)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17}}>🎵</div>
-            <div>
-              <div style={{fontSize:18,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>{t.title}</div>
-              <div style={{fontSize:10,color:"#525252",marginTop:-2}}>{t.subtitle}</div>
-            </div>
-          </div>
-          <div style={{flex:1,minWidth:140}}>
-            <div style={{display:"flex",alignItems:"center",gap:7,background:"#171717",border:"1px solid #262626",borderRadius:9,padding:"7px 12px"}}>
-              <span style={{fontSize:13,color:"#525252"}}>🔍</span>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={t.search}
-                style={{background:"none",border:"none",outline:"none",color:"#E5E5E5",fontSize:12,width:"100%"}}/>
-            </div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            {lastUpdated&&<span style={{fontSize:10,color:"#404040"}}>{t.updated}: {lastUpdated}</span>}
-            <button onClick={refetch} title="重新載入"
-              style={{background:"none",border:"1px solid #262626",borderRadius:8,padding:"6px 8px",color:"#525252",cursor:"pointer"}}>↻</button>
-            <button onClick={()=>setLang(l=>l==="zh"?"en":"zh")}
-              style={{display:"flex",alignItems:"center",gap:5,background:"#171717",border:"1px solid #262626",borderRadius:8,padding:"6px 13px",color:"#A3A3A3",fontSize:12,cursor:"pointer"}}>
-              🌐 {t.switchLang}
-            </button>
-          </div>
-        </div>
+  const html=`
+  <!-- Bio -->
+  <div class="bio-block">
+    <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#7C3AED,#EC4899);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🎵</div>
+    <div style="flex:1;min-width:200px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+        <span style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px">${BAND.name}</span>
+        <span style="font-size:12px;color:#525252">${BAND.tagline}</span>
       </div>
-
-      <div style={{maxWidth:1200,margin:"0 auto",padding:"24px 20px 0"}}>
-        {loading?(
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:300,gap:16}}>
-            <div style={{width:36,height:36,border:"2px solid #262626",borderTop:"2px solid #7C3AED",borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
-            <span style={{color:"#525252",fontSize:13}}>{t.loading}</span>
-          </div>
-        ):error?(
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:300,gap:14}}>
-            <span style={{fontSize:28}}>⚠️</span>
-            <span style={{color:"#737373",fontSize:13}}>{t.error}</span>
-            <div style={{color:"#404040",fontSize:11,maxWidth:340,textAlign:"center",lineHeight:1.6}}>{error}</div>
-            <button onClick={refetch} style={{background:"#7C3AED",color:"#fff",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,cursor:"pointer"}}>{t.retry}</button>
-          </div>
-        ):(
-          <div className="fade-in">
-            {/* 樂團簡介 */}
-            <BandBio t={t}/>
-
-            {/* KPIs */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12,marginBottom:20}}>
-              <KpiCard icon="📷" accent="#E1306C" label={t.igFans} value={fmtNum(agg["IG 粉絲數"])} delta={agg["IG 月增減"]} pending={igPending} historyData={history} histField="ig" histLabel={t.igFans} t={t}/>
-              <KpiCard icon="🎵" accent="#1DB954" label={t.spotifyListeners} value={fmtNum(agg["Spotify 月聽眾量"])} delta={agg["Spotify 月聽眾量增減"]} pending={spPending} historyData={history} histField="spotify" histLabel={t.spotifyListeners} t={t}/>
-              <KpiCard icon="▶" accent="#FF0000" label={t.ytSubs} value={fmtNum(agg["YouTube 訂閱數"])} delta={agg["YouTube 月訂閱增減"]} historyData={history} histField="ytSubs" histLabel={t.ytSubs} t={t}/>
-              <KpiCard icon="📊" accent="#F59E0B" label={t.ytTotal} value={fmtNum(agg["YouTube 總觀看量"])} historyData={history} histField="ytTotal" histLabel={t.ytTotal} t={t}/>
-            </div>
-
-            {/* Spotify panels */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14,marginBottom:20}}>
-              <div style={{background:"#171717",border:"1px solid #262626",borderRadius:14,padding:"1rem 1.2rem"}}>
-                <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:14}}>
-                  <span style={{fontSize:14}}>🎵</span>
-                  <span style={{fontWeight:700,fontSize:13}}>{t.topTracks}</span>
-                </div>
-                {top3.length===0
-                  ?<div style={{color:"#525252",fontSize:13}}>{t.noData}</div>
-                  :top3.map((tr,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<top3.length-1?"1px solid #1F1F1F":"none"}}>
-                      <span style={{width:22,height:22,borderRadius:6,background:"#1DB95422",color:"#1DB954",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
-                      <span style={{fontSize:13,color:"#E5E5E5"}}>{tr}</span>
-                    </div>
-                  ))
-                }
-              </div>
-              <div style={{background:"#171717",border:"1px solid #262626",borderRadius:14,padding:"1rem 1.2rem"}}>
-                <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:14}}>
-                  <span style={{fontSize:14}}>📋</span>
-                  <span style={{fontWeight:700,fontSize:13}}>{t.playlistLog}</span>
-                </div>
-                {playlists.length===0
-                  ?<div style={{color:"#525252",fontSize:13}}>{t.noData}</div>
-                  :playlists.map((line,i)=>(
-                    <div key={i} style={{fontSize:12,color:"#A3A3A3",lineHeight:1.7,padding:"5px 0",borderBottom:i<playlists.length-1?"1px solid #1F1F1F":"none"}}>{line}</div>
-                  ))
-                }
-              </div>
-            </div>
-
-            {/* Press + AI Campaigns */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:18}}>
-              <div>
-                <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:12}}>
-                  <span style={{fontSize:14}}>📰</span>
-                  <span style={{fontWeight:700,fontSize:13}}>{t.press}</span>
-                  <span style={{fontSize:10,color:"#525252",background:"#1F1F1F",borderRadius:5,padding:"2px 7px"}}>{fPress.length}</span>
-                </div>
-                {fPress.length===0
-                  ?<div style={{color:"#525252",fontSize:13,padding:"28px 0",textAlign:"center"}}>{t.noData}</div>
-                  :fPress.map((item,i)=><PressCard key={i} item={item}/>)
-                }
-              </div>
-              <AISuggestions agg={agg} lang={lang} t={t}/>
-            </div>
-          </div>
-        )}
+      <p style="font-size:13px;color:#A3A3A3;line-height:1.7;margin-bottom:10px">${BAND.bio}</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="${BAND.ig}" target="_blank" class="tag" style="color:#E1306C;background:#E1306C18;border:1px solid #E1306C33">Instagram ↗</a>
+        <a href="${BAND.spotify}" target="_blank" class="tag" style="color:#1DB954;background:#1DB95418;border:1px solid #1DB95433">Spotify ↗</a>
+        <a href="${BAND.yt}" target="_blank" class="tag" style="color:#FF4444;background:#FF444418;border:1px solid #FF444433">YouTube ↗</a>
       </div>
     </div>
-  );
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid-4">
+    ${kpiCard("ig","📷","#E1306C",t("igFans"),fmtNum(agg["IG 粉絲數"]),agg["IG 月增減"],igPend,miniChart(hist,"ig","#E1306C"))}
+    ${kpiCard("sp","🎵","#1DB954",t("sp"),fmtNum(agg["Spotify 月聽眾量"]),agg["Spotify 月聽眾量增減"],spPend,miniChart(hist,"sp","#1DB954"))}
+    ${kpiCard("ytS","▶","#FF4444",t("ytSubs"),fmtNum(agg["YouTube 訂閱數"]),agg["YouTube 月訂閱增減"],false,miniChart(hist,"ytS","#FF4444"))}
+    ${kpiCard("ytT","📊","#F59E0B",t("ytTotal"),fmtNum(agg["YouTube 總觀看量"]),null,false,miniChart(hist,"ytT","#F59E0B"))}
+  </div>
+
+  <!-- Spotify panels -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="sec-label"><span>🎵</span><span style="font-weight:700;font-size:13px">${t("top3")}</span></div>
+      ${top3.length?top3.map((tr,i)=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i<top3.length-1?"border-bottom:1px solid #1F1F1F":""}">
+          <span style="width:22px;height:22px;border-radius:6px;background:#1DB95422;color:#1DB954;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+          <span style="font-size:13px;color:#E5E5E5">${tr}</span>
+        </div>`).join(""):`<div style="color:#525252;font-size:13px">${t("noData")}</div>`}
+    </div>
+    <div class="card">
+      <div class="sec-label"><span>📋</span><span style="font-weight:700;font-size:13px">${t("playlist")}</span></div>
+      ${playlists.length?playlists.map((l,i)=>`<div style="font-size:12px;color:#A3A3A3;line-height:1.7;padding:5px 0;${i<playlists.length-1?"border-bottom:1px solid #1F1F1F":""}">${l}</div>`).join(""):`<div style="color:#525252;font-size:13px">${t("noData")}</div>`}
+    </div>
+  </div>
+
+  <!-- Press + AI -->
+  <div class="grid-press">
+    <div>
+      <div class="sec-label">
+        <span>📰</span>
+        <span style="font-weight:700;font-size:13px">${t("press")}</span>
+        <span class="cnt">${fPress.length}</span>
+      </div>
+      ${fPress.length?fPress.map(item=>`
+        <div class="press-card">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600;color:#E5E5E5;line-height:1.5;margin-bottom:4px">${item.title}</div>
+              ${item.source?`<div style="font-size:11px;color:#525252">${item.source}</div>`:""}
+            </div>
+            ${item.url?`<a href="${item.url}" target="_blank" rel="noreferrer" style="color:#7C3AED;flex-shrink:0;font-size:14px;margin-top:2px">↗</a>`:""}
+          </div>
+        </div>`).join(""):`<div style="color:#525252;font-size:13px;padding:28px 0;text-align:center">${t("noData")}</div>`}
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="sec-label" style="margin-bottom:0"><span>💡</span><span style="font-weight:700;font-size:13px">${t("campaigns")}</span></div>
+        <button id="ai-btn" class="btn btn-primary" onclick="generateAI()">${t("aiBtn")}</button>
+      </div>
+      <div id="ai-result" style="color:#525252;font-size:12px;text-align:center;padding:20px 0">${t("aiPlaceholder")}</div>
+    </div>
+  </div>`;
+
+  document.getElementById("main").innerHTML=html;
+  document.getElementById("main").style.display="block";
+  document.getElementById("main").className="fade-in";
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+// ══ Data Load ════════════════════════════════════════
+window.loadData=async function(){
+  document.getElementById("loading").style.display="flex";
+  document.getElementById("main").style.display="none";
+  try{
+    const res=await fetch(GAS_URL);
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    allRows=await res.json();
+    if(!Array.isArray(allRows))allRows=[];
+    document.getElementById("h-updated").textContent=t("updated")+": "+new Date().toLocaleDateString("zh-TW");
+    document.getElementById("loading").style.display="none";
+    renderAll();
+  }catch(e){
+    document.getElementById("loading").innerHTML=`
+      <div style="text-align:center">
+        <div style="font-size:28px;margin-bottom:12px">⚠️</div>
+        <div style="color:#737373;font-size:13px;margin-bottom:6px">${t("error")}</div>
+        <div style="color:#404040;font-size:11px;margin-bottom:16px">${e.message}</div>
+        <button class="btn btn-primary" onclick="loadData()">${t("retry")}</button>
+      </div>`;
+  }
+};
+
+// ══ Search ════════════════════════════════════════════
+document.getElementById("search").addEventListener("input",()=>{if(allRows.length)renderAll();});
+
+// ══ Init ═════════════════════════════════════════════
+loadData();
 </script>
 </body>
 </html>

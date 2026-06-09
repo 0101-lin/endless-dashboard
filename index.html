@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Endless 樂團數據儀表板</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0A0A0A; color: #E5E5E5; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    a { text-decoration: none; }
+    input::placeholder { color: #525252; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.4s ease both; }
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #262626; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    // ── 設定區：只需修改這裡 ──────────────────────────────
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxG8gHyA2w1bJjTIvqSD2HN1wJRHBgxc9aV5wg5v-yAzZaQl0U5GX98pxILCySmMa5e/exec";
+    // ────────────────────────────────────────────────────
+
+    const T = {
+      zh: {
+        title: "Endless", subtitle: "樂團數據儀表板",
+        search: "搜尋新聞、靈感…",
+        igFans: "IG 粉絲數", spotifyListeners: "Spotify 月聽眾量",
+        ytSubs: "YouTube 訂閱數", ytTotal: "YouTube 總觀看量",
+        topTracks: "Spotify 本月 Top 3", playlistLog: "指標歌單紀錄",
+        press: "媒體新聞牆", campaigns: "行銷靈感庫",
+        loading: "資料載入中…", error: "資料讀取失敗，請稍後再試。",
+        retry: "重試", noData: "暫無資料", switchLang: "EN",
+        updated: "最後更新", pending: "待更新",
+      },
+      en: {
+        title: "Endless", subtitle: "Band Analytics Dashboard",
+        search: "Search news, ideas…",
+        igFans: "IG Followers", spotifyListeners: "Spotify Monthly Listeners",
+        ytSubs: "YouTube Subscribers", ytTotal: "YouTube Total Views",
+        topTracks: "Spotify Top 3 This Month", playlistLog: "Playlist Log",
+        press: "Press News", campaigns: "Campaigns",
+        loading: "Loading data…", error: "Failed to load data. Please try again.",
+        retry: "Retry", noData: "No data available", switchLang: "中文",
+        updated: "Last updated", pending: "Pending",
+      },
+    };
+
+    function fmtNum(v) {
+      if (v === null || v === undefined || v === "" || v === "-") return "—";
+      const n = parseInt(String(v).replace(/,/g, "")) || 0;
+      if (n === 0) return "—";
+      if (Math.abs(n) >= 10000) return (n / 10000).toFixed(1) + "萬";
+      return n.toLocaleString();
+    }
+    function fmtDelta(v) {
+      if (!v || v === "-" || v === 0) return null;
+      const n = parseInt(String(v).replace(/,/g, "")) || 0;
+      if (n > 0) return { txt: "+" + n.toLocaleString(), color: "#22C55E" };
+      if (n < 0) return { txt: n.toLocaleString(), color: "#EF4444" };
+      return null;
+    }
+    function parseNewest(rows) {
+      // 取最新一列有效數值（依欄位各自取最後非空值）
+      const result = {};
+      const textMerge = ["行銷靈感庫", "媒體新聞牆", "Spotify 本月熱門 Top 3", "Spotify 指標歌單紀錄"];
+      rows.forEach(row => {
+        Object.entries(row).forEach(([k, v]) => {
+          if (v === undefined || v === null || String(v).trim() === "" || v === "-") return;
+          if (textMerge.includes(k)) {
+            if (!result[k]) result[k] = String(v);
+            else if (!result[k].includes(String(v))) result[k] = String(v); // keep latest
+          } else {
+            result[k] = v;
+          }
+        });
+      });
+      return result;
+    }
+    function parsePress(raw) {
+      if (!raw) return [];
+      return String(raw).split(/\n/).map(line => {
+        const urlMatch = line.match(/\((https?:\/\/[^)]+)\)/);
+        const title = line.replace(/^\d+\.\s*/, "").replace(/\s*\(https?:\/\/[^)]+\)/, "").replace(/\s*-\s*[^-]+$/, "").trim();
+        const sourceMatch = line.match(/- ([^(]+?)(?:\s*\(|$)/);
+        return { title, source: sourceMatch ? sourceMatch[1].trim() : "", url: urlMatch ? urlMatch[1] : "" };
+      }).filter(p => p.title);
+    }
+    function parseList(raw) {
+      if (!raw) return [];
+      return String(raw).split(/[\n；;]+/).map(s => s.trim()).filter(Boolean);
+    }
+
+    // ── Hooks ───────────────────────────────────────────
+    function useData() {
+      const [agg, setAgg] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [lastUpdated, setLastUpdated] = useState(null);
+
+      const load = useCallback(async () => {
+        setLoading(true); setError(null);
+        try {
+          const res = await fetch(GAS_URL);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const json = await res.json();
+          const rows = Array.isArray(json) ? json : [];
+          setAgg(parseNewest(rows));
+          setLastUpdated(new Date().toLocaleDateString("zh-TW"));
+        } catch (e) {
+          setError(e.message);
+        } finally {
+          setLoading(false);
+        }
+      }, []);
+
+      useEffect(() => { load(); }, [load]);
+      return { agg, loading, error, lastUpdated, refetch: load };
+    }
+
+    // ── UI Components ───────────────────────────────────
+    function KpiCard({ icon, accent, label, value, delta, pending }) {
+      const [hov, setHov] = useState(false);
+      const d = delta !== undefined ? fmtDelta(delta) : null;
+      const Icon = icon;
+      return (
+        <div
+          onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+          style={{ background: "#171717", border: "1px solid #262626", borderRadius: 14, padding: "1rem 1.2rem",
+            transform: hov ? "translateY(-4px)" : "none",
+            boxShadow: hov ? "0 14px 36px rgba(0,0,0,0.55)" : "none",
+            transition: "transform .2s, box-shadow .2s", cursor: "default" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: accent + "22", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon size={16} color={accent} />
+              </div>
+              <span style={{ fontSize: 11, color: "#737373" }}>{label}</span>
+            </div>
+            {pending && <span style={{ fontSize: 10, color: "#525252", background: "#1F1F1F", borderRadius: 5, padding: "2px 7px" }}>待更新</span>}
+          </div>
+          <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.5px", color: value === "—" ? "#404040" : "#E5E5E5" }}>{value}</div>
+          {d && <div style={{ fontSize: 12, fontWeight: 600, marginTop: 5, color: d.color }}>{d.txt} 本月</div>}
+        </div>
+      );
+    }
+
+    function PressCard({ item }) {
+      const [hov, setHov] = useState(false);
+      return (
+        <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+          style={{ background: "#171717", border: "1px solid #262626", borderLeft: "3px solid #7C3AED",
+            borderRadius: 12, padding: "12px 14px", marginBottom: 10,
+            transform: hov ? "translateY(-3px)" : "none",
+            boxShadow: hov ? "0 8px 28px rgba(0,0,0,0.5)" : "none",
+            transition: "transform .2s, box-shadow .2s" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#E5E5E5", lineHeight: 1.5, marginBottom: 4 }}>{item.title}</div>
+              {item.source && <div style={{ fontSize: 11, color: "#525252" }}>{item.source}</div>}
+            </div>
+            {item.url && (
+              <a href={item.url} target="_blank" rel="noreferrer"
+                style={{ color: "#7C3AED", flexShrink: 0, marginTop: 2, opacity: 0.75 }}>
+                ↗
+              </a>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function CampCard({ text }) {
+      const [hov, setHov] = useState(false);
+      return (
+        <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+          style={{ background: "#171717", border: "1px solid #262626", borderLeft: "3px solid #F59E0B",
+            borderRadius: 12, padding: "12px 14px", marginBottom: 10,
+            transform: hov ? "translateY(-3px)" : "none",
+            boxShadow: hov ? "0 8px 28px rgba(0,0,0,0.5)" : "none",
+            transition: "transform .2s, box-shadow .2s" }}>
+          <div style={{ fontSize: 13, color: "#A3A3A3", lineHeight: 1.65 }}>{text}</div>
+        </div>
+      );
+    }
+
+    function Spinner() {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 320, gap: 16 }}>
+          <div style={{ width: 36, height: 36, border: "2px solid #262626", borderTop: "2px solid #7C3AED", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+          <span style={{ color: "#525252", fontSize: 13 }}>資料載入中…</span>
+        </div>
+      );
+    }
+
+    function ErrorView({ msg, onRetry, t }) {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 320, gap: 14 }}>
+          <div style={{ fontSize: 28 }}>⚠️</div>
+          <div style={{ color: "#737373", fontSize: 13 }}>{t.error}</div>
+          <div style={{ color: "#404040", fontSize: 11, maxWidth: 340, textAlign: "center", lineHeight: 1.6 }}>{msg}</div>
+          <button onClick={onRetry}
+            style={{ background: "#7C3AED", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 13, cursor: "pointer", marginTop: 4 }}>
+            {t.retry}
+          </button>
+        </div>
+      );
+    }
+
+    // ── Lucide-style inline SVG icons ───────────────────
+    const Ic = ({ d, size=16, color="currentColor", strokeWidth=2 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        {[].concat(d).map((p, i) => <path key={i} d={p} />)}
+      </svg>
+    );
+    const Icons = {
+      Music:      (p) => <Ic {...p} d={["M9 18V5l12-2v13","M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z","M18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"]} />,
+      Instagram:  (p) => <Ic {...p} d={["M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z","M12 6.865a5.135 5.135 0 1 0 0 10.27 5.135 5.135 0 0 0 0-10.27z","M18.406 5.594a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"]} />,
+      Youtube:    (p) => <Ic {...p} d={["M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z","M9.75 15.02V8.98L15.5 12l-5.75 3.02z"]} />,
+      TrendUp:    (p) => <Ic {...p} d={["M23 6l-9.5 9.5-5-5L1 18","M17 6h6v6"]} />,
+      Users:      (p) => <Ic {...p} d={["M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2","M23 21v-2a4 4 0 0 0-3-3.87","M9 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z","M16 3.13a4 4 0 0 1 0 7.75"]} />,
+      Newspaper:  (p) => <Ic {...p} d={["M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2","M18 14h-8","M15 18h-5","M10 6h8v4h-8V6z"]} />,
+      Lightbulb:  (p) => <Ic {...p} d={["M9 18h6","M10 22h4","M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"]} />,
+      Globe:      (p) => <Ic {...p} d={["M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z","M2 12h20","M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"]} />,
+      Search:     (p) => <Ic {...p} d={["M11 17.25a6.25 6.25 0 1 1 0-12.5 6.25 6.25 0 0 1 0 12.5z","M16 16l4.5 4.5"]} />,
+      Refresh:    (p) => <Ic {...p} d={["M23 4v6h-6","M1 20v-6h6","M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"]} />,
+    };
+
+    // ── App ─────────────────────────────────────────────
+    function App() {
+      const [lang, setLang] = useState("zh");
+      const [search, setSearch] = useState("");
+      const t = T[lang];
+      const { agg, loading, error, lastUpdated, refetch } = useData();
+
+      const d = agg || {};
+      const pressItems = parsePress(d["媒體新聞牆"]);
+      const campItems  = parseList(d["行銷靈感庫"]);
+      const top3       = parseList(d["Spotify 本月熱門 Top 3"]);
+      const playlists  = parseList(d["Spotify 指標歌單紀錄"]);
+
+      const fPress = pressItems.filter(p => !search || (p.title + p.source).toLowerCase().includes(search.toLowerCase()));
+      const fCamp  = campItems.filter(c => !search || c.toLowerCase().includes(search.toLowerCase()));
+
+      const igPending  = !d["IG 粉絲數"] || d["IG 粉絲數"] === 0;
+      const spPending  = !d["Spotify 月聽眾量"] || d["Spotify 月聽眾量"] === 0;
+
+      return (
+        <div style={{ minHeight: "100vh", paddingBottom: 60 }}>
+          {/* ── Header ── */}
+          <div style={{ borderBottom: "1px solid #171717", position: "sticky", top: 0, background: "#0A0A0Aee", backdropFilter: "blur(12px)", zIndex: 10 }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", gap: 14, padding: "0 20px", height: 62, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg,#7C3AED,#EC4899)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Icons.Music size={17} color="#fff" />
+                </div>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px" }}>{t.title}</div>
+                  <div style={{ fontSize: 10, color: "#525252", marginTop: -2 }}>{t.subtitle}</div>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, minWidth: 140 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, background: "#171717", border: "1px solid #262626", borderRadius: 9, padding: "7px 12px" }}>
+                  <Icons.Search size={12} color="#525252" />
+                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search}
+                    style={{ background: "none", border: "none", outline: "none", color: "#E5E5E5", fontSize: 12, width: "100%" }} />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                {lastUpdated && <span style={{ fontSize: 10, color: "#404040" }}>{t.updated}: {lastUpdated}</span>}
+                <button onClick={refetch} title="重新載入"
+                  style={{ background: "none", border: "1px solid #262626", borderRadius: 8, padding: "6px 8px", color: "#525252", cursor: "pointer", display: "flex" }}>
+                  <Icons.Refresh size={13} color="#525252" />
+                </button>
+                <button onClick={() => setLang(l => l === "zh" ? "en" : "zh")}
+                  style={{ display: "flex", alignItems: "center", gap: 5, background: "#171717", border: "1px solid #262626", borderRadius: 8, padding: "6px 13px", color: "#A3A3A3", fontSize: 12, cursor: "pointer" }}>
+                  <Icons.Globe size={12} color="#A3A3A3" /> {t.switchLang}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Body ── */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px 0" }}>
+            {loading ? <Spinner /> : error ? <ErrorView msg={error} onRetry={refetch} t={t} /> : (
+              <div className="fade-in">
+                {/* KPIs */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, marginBottom: 20 }}>
+                  <KpiCard icon={Icons.Instagram} accent="#E1306C" label={t.igFans}          value={fmtNum(d["IG 粉絲數"])}          delta={d["IG 月增減"]}                  pending={igPending} />
+                  <KpiCard icon={Icons.Music}     accent="#1DB954" label={t.spotifyListeners} value={fmtNum(d["Spotify 月聽眾量"])}   delta={d["Spotify 月聽眾量增減"]}        pending={spPending} />
+                  <KpiCard icon={Icons.Youtube}   accent="#FF0000" label={t.ytSubs}           value={fmtNum(d["YouTube 訂閱數"])}     delta={d["YouTube 月訂閱增減"]} />
+                  <KpiCard icon={Icons.TrendUp}   accent="#F59E0B" label={t.ytTotal}          value={fmtNum(d["YouTube 總觀看量"])} />
+                </div>
+
+                {/* Spotify panels */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14, marginBottom: 20 }}>
+                  <div style={{ background: "#171717", border: "1px solid #262626", borderRadius: 14, padding: "1rem 1.2rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
+                      <Icons.Music size={14} color="#1DB954" />
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{t.topTracks}</span>
+                    </div>
+                    {top3.length === 0
+                      ? <div style={{ color: "#525252", fontSize: 13 }}>{t.noData}</div>
+                      : top3.map((tr, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < top3.length - 1 ? "1px solid #1F1F1F" : "none" }}>
+                          <span style={{ width: 22, height: 22, borderRadius: 6, background: "#1DB95422", color: "#1DB954", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                          <span style={{ fontSize: 13, color: "#E5E5E5" }}>{tr}</span>
+                        </div>
+                      ))
+                    }
+                  </div>
+                  <div style={{ background: "#171717", border: "1px solid #262626", borderRadius: 14, padding: "1rem 1.2rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
+                      <Icons.Users size={14} color="#7C3AED" />
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{t.playlistLog}</span>
+                    </div>
+                    {playlists.length === 0
+                      ? <div style={{ color: "#525252", fontSize: 13 }}>{t.noData}</div>
+                      : playlists.map((line, i) => (
+                        <div key={i} style={{ fontSize: 12, color: "#A3A3A3", lineHeight: 1.7, padding: "5px 0", borderBottom: i < playlists.length - 1 ? "1px solid #1F1F1F" : "none" }}>{line}</div>
+                      ))
+                    }
+                  </div>
+                </div>
+
+                {/* Press + Campaigns */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+                      <Icons.Newspaper size={14} color="#7C3AED" />
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{t.press}</span>
+                      <span style={{ fontSize: 10, color: "#525252", background: "#1F1F1F", borderRadius: 5, padding: "2px 7px" }}>{fPress.length}</span>
+                    </div>
+                    {fPress.length === 0
+                      ? <div style={{ color: "#525252", fontSize: 13, padding: "28px 0", textAlign: "center" }}>{t.noData}</div>
+                      : fPress.map((item, i) => <PressCard key={i} item={item} />)
+                    }
+                  </div>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+                      <Icons.Lightbulb size={14} color="#F59E0B" />
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{t.campaigns}</span>
+                      <span style={{ fontSize: 10, color: "#525252", background: "#1F1F1F", borderRadius: 5, padding: "2px 7px" }}>{fCamp.length}</span>
+                    </div>
+                    {fCamp.length === 0
+                      ? <div style={{ color: "#525252", fontSize: 13, padding: "28px 0", textAlign: "center" }}>{t.noData}</div>
+                      : fCamp.map((c, i) => <CampCard key={i} text={c} />)
+                    }
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

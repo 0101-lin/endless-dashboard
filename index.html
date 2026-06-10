@@ -317,7 +317,7 @@ function renderAbout(){
 
   if(aboutTab==="overview"){
     content=`
-    <div style="position:relative;width:100%;height:320px;border-radius:12px;overflow:hidden;margin-bottom:20px">
+    <div style="position:relative;width:100%;height:420px;border-radius:12px;overflow:hidden;margin-bottom:20px">
       <img src="${IMGS.cover}" style="width:100%;height:100%;object-fit:cover;object-position:center center" onerror="this.style.display='none'"/>
       <div style="position:absolute;inset:0;background:linear-gradient(to top,#111 0%,transparent 60%)"></div>
       <div style="position:absolute;bottom:16px;left:16px">
@@ -361,7 +361,7 @@ function renderAbout(){
             m.name==='Holiday'?'center 10%':
             m.name==='EaTing'?'center 25%':
             m.name==='Wesh'?'center 20%':
-            'center center'}" onerror="this.parentElement.style.display='none'"/>
+            m.name==='靈異'?'center 30%'}" onerror="this.parentElement.style.display='none'"/>
         </div>`:""}
         <div style="margin-bottom:8px">
           <div style="font-size:16px;font-weight:800;color:#fff">${m.name}</div>
@@ -394,7 +394,18 @@ function renderAbout(){
       <div class="titem">
         <div class="tdate">${item.d}</div>
         <div class="tcontent">${item.t}</div>
-      </div>`).join("")}</div>`;
+      </div>`).join("")}</div>
+    <div style="margin-top:20px">
+      <div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:12px;letter-spacing:.5px">📸 演出紀錄</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">
+        <div style="border-radius:10px;overflow:hidden;height:200px">
+          <img src="${IMGS.live1}" style="width:100%;height:100%;object-fit:cover;object-position:center center" onerror="this.parentElement.style.display='none'"/>
+        </div>
+        <div style="border-radius:10px;overflow:hidden;height:200px">
+          <img src="${IMGS.live2}" style="width:100%;height:100%;object-fit:cover;object-position:center center" onerror="this.parentElement.style.display='none'"/>
+        </div>
+      </div>
+    </div>`;
   } else if(aboutTab==="audience"){
     content=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
       ${[
@@ -409,6 +420,9 @@ function renderAbout(){
       <div class="card" style="grid-column:1/-1">
         <div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:8px">🎵 Spotify 歌單成效</div>
         <div style="font-size:13px;color:#A3A3A3;line-height:1.75">每次新歌釋出均會被加入 <span style="color:#1DB954;font-weight:700">3～4 個 Spotify 官方歌單</span>，顯示演算法推薦效果穩定。目前亞洲市場發展潛力較歐美高，臺灣為最大聽眾市場（2,801 人），其後依序為新加坡、香港、馬來西亞。</div>
+      </div>
+      <div style="grid-column:1/-1;border-radius:12px;overflow:hidden;height:280px;margin-top:4px">
+        <img src="${IMGS.liveGroup}" style="width:100%;height:100%;object-fit:cover;object-position:center 30%" onerror="this.parentElement.style.display='none'"/>
       </div>
     </div>`;
   }

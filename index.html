@@ -7,7 +7,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100vh}
-body{background:#0A0A0A;color:#E5E5E5;font-family:'Inter',-apple-system,sans-serif}
+body{background:#0A0A0A;color:#E5E5E5;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif}
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;font-family:inherit;font-size:12px}
 input{font-family:inherit}
@@ -50,6 +50,8 @@ header{position:sticky;top:0;background:rgba(10,10,10,.94);backdrop-filter:blur(
 .disc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .dcard{background:#1a1a1a;border:1px solid #262626;border-radius:12px;padding:14px;transition:transform .2s,box-shadow .2s}
 .dcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.img-box{width:100%;border-radius:8px;overflow:hidden;margin-bottom:10px}
+.img-box img{width:100%;height:100%;object-fit:cover;display:block}
 </style>
 </head>
 <body>
@@ -85,358 +87,369 @@ header{position:sticky;top:0;background:rgba(10,10,10,.94);backdrop-filter:blur(
 </div>
 
 <script>
-var GAS="https://script.google.com/macros/s/AKfycbxG8gHyA2w1bJjTIvqSD2HN1wJRHBgxc9aV5wg5v-yAzZaQl0U5GX98pxILCySmMa5e/exec";
+const GAS="https://script.google.com/macros/s/AKfycbxG8gHyA2w1bJjTIvqSD2HN1wJRHBgxc9aV5wg5v-yAzZaQl0U5GX98pxILCySmMa5e/exec";
 
-function gdrive(id){return"https://lh3.googleusercontent.com/d/"+id;}
-var IMGS={
-  cover:     gdrive("1pduO1BeztwaRXkK0szur-cJWphkx_2mk"),
-  about:     gdrive("1Qwb2BBN17bKw40ofwLM8GAhxsi4wb-gZ"),
-  contact:   gdrive("1MvOZg3vUBtbhq8nd38ZJQ7ir_90U6RAd"),
-  live1:     gdrive("1CXHleOxZe4_VD3qIpy1WkcwMvK6j6Mv0"),
-  live2:     gdrive("1ki9rb6Dom6t9XKa4USnL7vrPUSo0W9ye"),
-  liveGroup: gdrive("1PDU_oho_N21xocgIt_7CLptlTN50wDVl"),
+function gd(id){return"https://lh3.googleusercontent.com/d/"+id;}
+const IMGS={
+  cover:     gd("1pduO1BeztwaRXkK0szur-cJWphkx_2mk"),
+  about:     gd("1Qwb2BBN17bKw40ofwLM8GAhxsi4wb-gZ"),
+  contact:   gd("1MvOZg3vUBtbhq8nd38ZJQ7ir_90U6RAd"),
+  live1:     gd("1CXHleOxZe4_VD3qIpy1WkcwMvK6j6Mv0"),
+  live2:     gd("1ki9rb6Dom6t9XKa4USnL7vrPUSo0W9ye"),
+  liveGroup: gd("1PDU_oho_N21xocgIt_7CLptlTN50wDVl"),
   members:{
-    "松霖":   gdrive("19bDblL_QnHooLMzSEESpYf7qosu-kFgV"),
-    "Holiday":gdrive("1D87l_u_-uxuM9caAYoTDPLPK-BUGL29W"),
-    "EaTing": gdrive("19m9l-q-69cN8ss4FQhyWWskIjJCYZTJg"),
-    "Wesh":   gdrive("1xEDI57MKYqmtuxJ52gGEr3wREMBLB2q7"),
-    "靈異":   gdrive("1xUDEmMDP58jpVZo7uurdwfWmtwKbgKZn")
+    "松霖":   gd("19bDblL_QnHooLMzSEESpYf7qosu-kFgV"),
+    "Holiday":gd("1D87l_u_-uxuM9caAYoTDPLPK-BUGL29W"),
+    "EaTing": gd("19m9l-q-69cN8ss4FQhyWWskIjJCYZTJg"),
+    "Wesh":   gd("1xEDI57MKYqmtuxJ52gGEr3wREMBLB2q7"),
+    "靈異":   gd("1xUDEmMDP58jpVZo7uurdwfWmtwKbgKZn"),
   },
   songs:{
-    "空氣一樣的我":          gdrive("17Qyfd8uG3JnDJ8pwO4U9HHJf8jIwpl1R"),
-    "狩獵 Hunting":          gdrive("1bGeSWrCfx_6PsmZNXb8reRoMDqaGG-oR"),
-    "怪物 Monster":          gdrive("1yAZ7Gq2L8pfK_Ocoey6rIACRRekkfPWS"),
+    "空氣一樣的我":          gd("17Qyfd8uG3JnDJ8pwO4U9HHJf8jIwpl1R"),
+    "狩獵 Hunting":          gd("1bGeSWrCfx_6PsmZNXb8reRoMDqaGG-oR"),
+    "怪物 Monster":          gd("1yAZ7Gq2L8pfK_Ocoey6rIACRRekkfPWS"),
     "惡性循環 Vicious Cycle":"https://img.youtube.com/vi/6TJ3WFAqOUE/maxresdefault.jpg",
     "沉沒 Sinking":          "https://img.youtube.com/vi/thtg6wDQv8s/maxresdefault.jpg",
-    "墜落 Falling ft.搖滾婊子":"https://img.youtube.com/vi/VvtyJ2kmJ0k/maxresdefault.jpg"
-  }
+    "墜落 Falling ft.搖滾婊子":"https://img.youtube.com/vi/VvtyJ2kmJ0k/maxresdefault.jpg",
+  },
 };
 
-var BAND={
+const MEMBER_POS={"松霖":"center 20%","Holiday":"center 10%","EaTing":"center 25%","Wesh":"center 20%","靈異":"center 30%"};
+
+const BAND={
   slogan:"始於破碎，終於重生；終於破碎，始於重生",
   desc:"Endless 是我們都逃不掉的現實，也是無盡的可能性。以 Modern Metalcore 為基底，揉合饒舌、流行、Hyperpop 及 EDM 等多種元素，撕裂沉默，釋放焦慮、壓抑與反叛。歌詞道出人們面對人生的疑惑，引發共鳴及反思。只要你願意睜眼，終能在黑暗中開鑿出口。",
-  founded:"2020.08.24",
-  genre:"Modern Metalcore / Hyperpop / EDM",
+  founded:"2020.08.24",genre:"Modern Metalcore / Hyperpop / EDM",
   ig:"https://www.instagram.com/endless.band_official",
-  yt:"https://youtube.com/@endless",
-  sp:"https://open.spotify.com",
+  yt:"https://youtube.com",sp:"https://open.spotify.com",
   email:"Endless.official2022@gmail.com",
   contests:["2023 第十屆 H.O.T. 原創音樂大賽｜斜槓青年組 複賽","2024 第十一屆 H.O.T. 原創音樂大賽｜斜槓青年組 全國前六強","2025 臺北音樂不斷電 複賽","2025 河海音樂季｜海洋獨立大賞會前賽"],
   members:[
-    {name:"松霖",role:"吉他手・團長",tags:["吉他手","影音企劃","詞曲創作","演員"],bio:"自小受表演、電影和搖滾樂薰陶，因為伍佰老師才開始學吉他。大四組建 Endless。",ig:"https://www.instagram.com/sterling.tsai.15/",zodiac:"巨蟹座",pos:"center 20%"},
-    {name:"Holiday",role:"吉他手・製作人",tags:["吉他手","音樂製作","錄音混音","財務"],bio:"具備從編曲、器樂實錄到後期混音的一站式製作能量，致力於追求聲音整體的平衡感與動態表現。",ig:"https://www.instagram.com/holiday._18/",zodiac:"雙子座",pos:"center 10%"},
-    {name:"EaTing",role:"主唱",tags:["主唱","詞曲創作","舞台設計","對外公關"],bio:"竹園岡全國高中職熱音大賽冠軍，文化大學校內歌唱比賽兩屆冠軍，政大金旋獎與台大金韻獎決賽。現任 RMS 歌唱教學合作老師。",ig:"https://www.instagram.com/endless__vc/",zodiac:"天秤座",pos:"center 25%"},
-    {name:"Wesh",role:"貝斯手",tags:["貝斯手","舞台動作","書記"],bio:"除了貝斯以外也具備吉他彈奏與軟體編曲能力，舞台展現力強、個性反骨。",ig:"https://www.instagram.com/wesh_9527/",zodiac:"射手座",pos:"center 20%"},
-    {name:"靈異",role:"鼓手・行銷企劃",tags:["鼓手","行銷企劃","經紀","教學"],bio:"同時斜槓行銷、音樂、短影音製作與教學，具四年以上爵士鼓教學經驗，曾受 Xvive 等品牌邀請進行產品演示。",ig:"https://www.instagram.com/angela_lin0101/",zodiac:"雙子座",pos:"center 30%"}
+    {name:"松霖",role:"吉他手・團長",tags:["吉他手","影音企劃","詞曲創作","演員"],bio:"自小受表演、電影和搖滾樂薰陶，因為伍佰老師才開始學吉他。大四組建 Endless。",ig:"https://www.instagram.com/sterling.tsai.15/",zodiac:"巨蟹座"},
+    {name:"Holiday",role:"吉他手・製作人",tags:["吉他手","音樂製作","錄音混音","財務"],bio:"具備從編曲、器樂實錄到後期混音的一站式製作能量，致力於追求聲音整體的平衡感與動態表現。",ig:"https://www.instagram.com/holiday._18/",zodiac:"雙子座"},
+    {name:"EaTing",role:"主唱",tags:["主唱","詞曲創作","舞台設計","對外公關"],bio:"竹園岡全國高中職熱音大賽冠軍，文化大學校內歌唱比賽兩屆冠軍，政大金旋獎與台大金韻獎決賽。現任 RMS 歌唱教學合作老師。",ig:"https://www.instagram.com/endless__vc/",zodiac:"天秤座"},
+    {name:"Wesh",role:"貝斯手",tags:["貝斯手","舞台動作","書記"],bio:"除了貝斯以外也具備吉他彈奏與軟體編曲能力，舞台展現力強、個性反骨。",ig:"https://www.instagram.com/wesh_9527/",zodiac:"射手座"},
+    {name:"靈異",role:"鼓手・行銷企劃",tags:["鼓手","行銷企劃","經紀","教學"],bio:"同時斜槓行銷、音樂、短影音製作與教學，具四年以上爵士鼓教學經驗，曾受 Xvive 等品牌邀請進行產品演示。",ig:"https://www.instagram.com/angela_lin0101/",zodiac:"雙子座"},
   ],
   discography:[
     {title:"惡性循環 Vicious Cycle",year:"2023",desc:"創作靈感來自團員在泥沼中求生存之現況，反映對各種惡性循環的無力感。",stats:"YouTube 7.9K 觀看・345 讚・60 留言"},
     {title:"沉沒 Sinking",year:"2024",desc:"關注憂鬱、自殺現象，透過歌詞提醒大家重視「病識感」。首支正式 MV。",stats:"街聲 6.8萬播放・YouTube MV 6.4K"},
-    {title:"墜落 Falling ft.搖滾婊子",year:"2024",desc:"Endless 首次與其他藝人合作，以清腔與吼腔的搭配呈現崩潰無力感。",stats:"YouTube 5.6K・215 讚"},
+    {title:"墜落 Falling ft.搖滾婊子",year:"2024",desc:"首次與其他藝人合作，以清腔與吼腔搭配呈現崩潰無力感。",stats:"YouTube 5.6K・215 讚"},
     {title:"怪物 Monster",year:"2024",desc:"警示人們保持真正的自我，勿讓外在角色扮演奪去靈魂。",stats:"Spotify 3.4萬播放・3 個官方歌單"},
     {title:"空氣一樣的我",year:"2025",desc:"以純清腔演繹現代人暈船卻不得「愛」的窘境，取得破圈效果。",stats:"YouTube 3.8萬觀看・1093 讚・135 留言"},
-    {title:"狩獵 Hunting",year:"2025",desc:"面臨生活與資本主義壓榨的痛苦，探問在吸血鬼與獵物之間是否真有選擇。",stats:"Spotify 4.7K・4 個官方歌單"}
+    {title:"狩獵 Hunting",year:"2025",desc:"面臨生活與資本主義壓榨的痛苦，探問在吸血鬼與獵物之間是否真有選擇。",stats:"Spotify 4.7K・4 個官方歌單"},
   ],
   timeline:[
-    {d:"2020.08",t:"前身「紅線樂隊 Redline Band」創團，08/29 釋出首首 DEMO〈末日 Apocalypse〉"},
+    {d:"2020.08",t:"前身「紅線樂隊 Redline Band」創團，釋出首首 DEMO〈末日 Apocalypse〉"},
     {d:"2021.01",t:"新鼓手「靈異」加入"},
     {d:"2023.01",t:"正式改名為「Endless」"},
     {d:"2023.02",t:"首支正式單曲〈惡性循環〉釋出；首場演出「Romance stage」Sold Out"},
     {d:"2023.12",t:"首場樂團拼盤演出「Metallic Munch」"},
     {d:"2024.03",t:"第二首單曲〈沉沒 Sinking〉釋出"},
-    {d:"2024.05",t:"首場自辦演出「肆無忌憚」完美落幕；〈墜落 Falling〉釋出"},
+    {d:"2024.05",t:"首場自辦演出「肆無忌憚」；〈墜落 Falling〉釋出"},
     {d:"2024.08",t:"〈怪物 Monster〉釋出；H.O.T. 第十一屆複賽"},
-    {d:"2024.10",t:"H.O.T. 全國前六強；首次台中演出；自辦演出「臺北浪漫革命」"},
-    {d:"2024.12",t:"自辦演出「夢想延期中…」；首批周邊「無盡宇宙入門組」開始販售"},
+    {d:"2024.10",t:"H.O.T. 全國前六強；首次台中演出；「臺北浪漫革命」"},
+    {d:"2024.12",t:"「夢想延期中…」；首批周邊「無盡宇宙入門組」開始販售"},
     {d:"2025.06",t:"〈空氣一樣的我〉釋出；河海音樂季會前賽"},
     {d:"2025.07",t:"臺北音樂不斷電複賽；IG 粉絲突破 6,000"},
     {d:"2025.08",t:"臺北音樂不斷電音樂節拾音舞台；多場受邀嘉賓演出"},
     {d:"2025.12",t:"受邀臺中群島藝術園區大劇院「樂王府開府降臨」中型專場"},
     {d:"2026.01",t:"受邀「Storymaker 製燥者年末專場」"},
-    {d:"2026.03",t:"首支 MV〈沉沒 Sinking〉正式上架 YouTube"}
+    {d:"2026.03",t:"首支 MV〈沉沒 Sinking〉正式上架 YouTube"},
   ],
-  ta:{gender:"68% 男性・22% 女性・1% 非二元性別",age:"主力年齡層 25–34 歲（53%），其次 18–24 歲（24%）",region:"台灣為主，亦觸及新加坡、香港、馬來西亞、美國、日本等地"}
+  ta:{gender:"68% 男性・22% 女性・1% 非二元性別",age:"主力年齡層 25–34 歲（53%），其次 18–24 歲（24%）",region:"台灣為主，亦觸及新加坡、香港、馬來西亞、美國、日本等地"},
 };
 
-var TL={
-  zh:{sub:"樂團數據儀表板",lb:"EN",ig:"IG 粉絲數",sp:"Spotify 月聽眾量",ytS:"YouTube 訂閱數",ytT:"YouTube 總觀看量",top3:"Spotify 本月 Top 3",pl:"指標歌單紀錄",press:"媒體新聞牆",camp:"行銷靈感庫",load:"資料載入中…",err:"資料讀取失敗",retry:"重試",noData:"暫無資料",upd:"最後更新",pend:"待更新",md:"月增減",hist:"歷史趨勢",aiBtn:"✦ AI 生成行銷建議",aiLoad:"AI 分析中…",aiPh:"點擊按鈕，AI 將根據本月數據自動生成行銷建議",quick:"快速建議",deep:"深度分析",noHist:"歷史資料不足（需 2 筆以上）"},
-  en:{sub:"Band Analytics Dashboard",lb:"中文",ig:"IG Followers",sp:"Spotify Monthly Listeners",ytS:"YouTube Subscribers",ytT:"YouTube Total Views",top3:"Spotify Top 3",pl:"Playlist Log",press:"Press News",camp:"Campaigns",load:"Loading…",err:"Failed to load data",retry:"Retry",noData:"No data",upd:"Updated",pend:"Pending",md:"Monthly Δ",hist:"Trend",aiBtn:"✦ Generate AI Suggestions",aiLoad:"AI thinking…",aiPh:"Click to generate AI marketing suggestions.",quick:"Quick Tips",deep:"Deep Analysis",noHist:"Not enough history (need 2+ months)"}
-};
-
-var lang="zh", allRows=[], aboutTab="overview";
-function t(k){return TL[lang][k]||k;}
+let lang="zh",allRows=[],aboutTab="overview";
+function t(k){return({zh:{sub:"樂團數據儀表板",lb:"EN",ig:"IG 粉絲數",sp:"Spotify 月聽眾量",ytS:"YouTube 訂閱數",ytT:"YouTube 總觀看量",top3:"Spotify 本月 Top 3",pl:"指標歌單紀錄",press:"媒體新聞牆",camp:"行銷靈感庫",load:"資料載入中…",err:"資料讀取失敗",retry:"重試",noData:"暫無資料",upd:"最後更新",pend:"待更新",md:"月增減",hist:"歷史趨勢",aiBtn:"✦ AI 生成行銷建議",aiLoad:"AI 分析中…",aiPh:"點擊按鈕，AI 將根據本月數據自動生成行銷建議",quick:"快速建議",deep:"深度分析",noHist:"歷史資料不足（需 2 筆以上）"},en:{sub:"Band Analytics Dashboard",lb:"中文",ig:"IG Followers",sp:"Spotify Monthly Listeners",ytS:"YouTube Subscribers",ytT:"YouTube Total Views",top3:"Spotify Top 3",pl:"Playlist Log",press:"Press News",camp:"Campaigns",load:"Loading…",err:"Failed to load",retry:"Retry",noData:"No data",upd:"Updated",pend:"Pending",md:"Monthly Δ",hist:"Trend",aiBtn:"✦ Generate AI Suggestions",aiLoad:"AI thinking…",aiPh:"Click to generate AI marketing suggestions.",quick:"Quick Tips",deep:"Deep Analysis",noHist:"Not enough history"}}[lang]||{})[k]||k;}
 
 function fN(v){
   if(v===null||v===undefined||v===""||v==="-")return"—";
-  var n=parseInt(String(v).replace(/,/g,""))||0;
+  const n=parseInt(String(v).replace(/,/g,""))||0;
   if(!n)return"—";
   return Math.abs(n)>=10000?(n/10000).toFixed(1)+"萬":n.toLocaleString();
 }
 function fD(v){
-  var n=parseInt(String(v||"").replace(/[,+]/g,""))||0;
+  const n=parseInt(String(v||"").replace(/[,+]/g,""))||0;
   if(n>0)return{s:"+"+n.toLocaleString(),c:"#22C55E"};
   if(n<0)return{s:n.toLocaleString(),c:"#EF4444"};
   return null;
 }
 function fDate(raw){
   if(!raw)return"";
-  var d=new Date(raw);
-  return isNaN(d)?String(raw).slice(0,7):(d.getFullYear()+"/"+(d.getMonth()+1));
+  const d=new Date(raw);
+  return isNaN(d)?String(raw).slice(0,7):`${d.getFullYear()}/${d.getMonth()+1}`;
 }
 function buildAgg(rows){
-  var a={};
-  var tm=["行銷靈感庫","媒體新聞牆","Spotify 本月熱門 Top 3","Spotify 指標歌單紀錄"];
-  rows.forEach(function(r){
-    Object.keys(r).forEach(function(k){
-      var v=r[k];
-      if(v===null||v===undefined||String(v).trim()===""||v==="-")return;
-      if(tm.indexOf(k)>=0){a[k]=String(v);}else{a[k]=v;}
-    });
-  });
+  const a={},tm=["行銷靈感庫","媒體新聞牆","Spotify 本月熱門 Top 3","Spotify 指標歌單紀錄"];
+  rows.forEach(r=>Object.entries(r).forEach(([k,v])=>{
+    if(v===null||v===undefined||String(v).trim()===""||v==="-")return;
+    tm.includes(k)?a[k]=String(v):a[k]=v;
+  }));
   return a;
 }
 function buildHist(rows){
-  var seen={},h=[];
-  rows.forEach(function(r){
-    var dk=Object.values(r)[0];
+  const seen={},h=[];
+  rows.forEach(r=>{
+    const dk=Object.values(r)[0];
     if(!dk||seen[dk])return;
     seen[dk]=true;
-    h.push({date:fDate(dk),
-      ig:parseInt(String(r["IG 粉絲數"]||0).replace(/,/g,""))||0,
-      sp:parseInt(String(r["Spotify 月聽眾量"]||0).replace(/,/g,""))||0,
-      ytS:parseInt(String(r["YouTube 訂閱數"]||0).replace(/,/g,""))||0,
-      ytT:parseInt(String(r["YouTube 總觀看量"]||0).replace(/,/g,""))||0
-    });
+    h.push({date:fDate(dk),ig:parseInt(String(r["IG 粉絲數"]||0).replace(/,/g,""))||0,sp:parseInt(String(r["Spotify 月聽眾量"]||0).replace(/,/g,""))||0,ytS:parseInt(String(r["YouTube 訂閱數"]||0).replace(/,/g,""))||0,ytT:parseInt(String(r["YouTube 總觀看量"]||0).replace(/,/g,""))||0});
   });
   return h.reverse();
 }
 function parsePress(raw){
   if(!raw)return[];
-  return String(raw).split(/\n/).map(function(line){
-    var um=line.match(/\((https?:\/\/[^)]+)\)/);
-    var title=line.replace(/^\d+\.\s*/,"").replace(/\s*\(https?:\/\/[^)]+\)/,"").replace(/\s*中的YouTube影片/,"").replace(/\s*-\s*[^-（(]+$/,"").trim();
-    var sm=line.match(/-\s*([^(-]+?)(?:\s*\(|$)/);
-    return{title:title,source:sm?sm[1].trim():"",url:um?um[1]:""};
-  }).filter(function(p){return p.title;});
+  return String(raw).split(/\n/).map(line=>{
+    const um=line.match(/\((https?:\/\/[^)]+)\)/);
+    const title=line.replace(/^\d+\.\s*/,"").replace(/\s*\(https?:\/\/[^)]+\)/,"").replace(/\s*中的YouTube影片/,"").replace(/\s*-\s*[^-（(]+$/,"").trim();
+    const sm=line.match(/-\s*([^(-]+?)(?:\s*\(|$)/);
+    return{title,source:sm?sm[1].trim():"",url:um?um[1]:""};
+  }).filter(p=>p.title);
 }
 function parseList(raw){
   if(!raw)return[];
-  return String(raw).split(/[\n；;]+/).map(function(s){return s.trim();}).filter(Boolean);
+  return String(raw).split(/[\n；;]+/).map(s=>s.trim()).filter(Boolean);
 }
 
 function miniChart(data,field,color){
-  var vals=data.map(function(d){return d[field];});
-  if(!vals.some(function(v){return v>0;})||data.length<2)
-    return'<div style="color:#525252;font-size:12px;text-align:center;padding:16px 0">'+t("noHist")+'</div>';
-  var W=500,H=110,PL=50,PR=8,PT=6,PB=28;
-  var cW=W-PL-PR,cH=H-PT-PB;
-  var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),range=max-min||1;
-  var xStep=cW/(data.length-1);
-  var pts=data.map(function(d,i){
-    return{x:PL+i*xStep,y:PT+cH-(d[field]-min)/range*cH,v:d[field],date:d.date};
-  });
-  var poly=pts.map(function(p){return p.x+","+p.y;}).join(" ");
-  var area=PL+","+(PT+cH)+" "+poly+" "+(PL+cW)+","+(PT+cH);
-  var yT=[min,min+range/2,max].map(function(v){return Math.abs(v)>=10000?(v/10000).toFixed(1)+"萬":Math.round(v).toLocaleString();});
-  var yY=[PT+cH,PT+cH/2,PT];
-  var dots=pts.map(function(p){return'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="'+color+'" stroke="#171717" stroke-width="1.5"/>';}).join("");
-  return'<div style="overflow:hidden"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:'+H+'px"><defs><linearGradient id="g'+field+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".15"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
-    [0,1,2].map(function(_,i){return'<line x1="'+PL+'" y1="'+yY[i]+'" x2="'+(PL+cW)+'" y2="'+yY[i]+'" stroke="#1F1F1F" stroke-width="1"/>';}).join("")+
-    yT.map(function(tk,i){return'<text x="'+(PL-4)+'" y="'+(yY[i]+4)+'" text-anchor="end" font-size="10" fill="#525252">'+tk+'</text>';}).join("")+
-    data.map(function(d,i){return'<text x="'+(PL+i*xStep)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="#525252">'+d.date+'</text>';}).join("")+
-    '<polygon points="'+area+'" fill="url(#g'+field+')"/>'+
-    '<polyline points="'+poly+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
-    dots+'</svg></div>';
+  const vals=data.map(d=>d[field]);
+  if(!vals.some(v=>v>0)||data.length<2)return`<div style="color:#525252;font-size:12px;text-align:center;padding:14px 0">${t("noHist")}</div>`;
+  const W=500,H=110,PL=50,PR=8,PT=6,PB=28,cW=W-PL-PR,cH=H-PT-PB;
+  const min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
+  const xStep=cW/(data.length-1);
+  const pts=data.map((d,i)=>({x:PL+i*xStep,y:PT+cH-(d[field]-min)/range*cH,v:d[field],date:d.date}));
+  const poly=pts.map(p=>`${p.x},${p.y}`).join(" ");
+  const area=`${PL},${PT+cH} ${poly} ${PL+cW},${PT+cH}`;
+  const yT=[min,min+range/2,max].map(v=>Math.abs(v)>=10000?(v/10000).toFixed(1)+"萬":Math.round(v).toLocaleString());
+  const yY=[PT+cH,PT+cH/2,PT];
+  return`<div style="overflow:hidden"><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px">
+    <defs><linearGradient id="g${field}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".15"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    ${[0,1,2].map(i=>`<line x1="${PL}" y1="${yY[i]}" x2="${PL+cW}" y2="${yY[i]}" stroke="#1F1F1F" stroke-width="1"/>`).join("")}
+    ${yT.map((tk,i)=>`<text x="${PL-4}" y="${yY[i]+4}" text-anchor="end" font-size="10" fill="#525252">${tk}</text>`).join("")}
+    ${data.map((d,i)=>`<text x="${PL+i*xStep}" y="${H-4}" text-anchor="middle" font-size="9" fill="#525252">${d.date}</text>`).join("")}
+    <polygon points="${area}" fill="url(#g${field})"/>
+    <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${color}" stroke="#171717" stroke-width="1.5"/>`).join("")}
+  </svg></div>`;
 }
 
+function renderAbout(){
+  const tabs=[{k:"overview",l:"樂團概覽"},{k:"members",l:"成員介紹"},{k:"disc",l:"作品集"},{k:"timeline",l:"編年史"},{k:"audience",l:"受眾分析"}];
+  const nav=tabs.map(tb=>`<button class="tab${aboutTab===tb.k?" active":""}" onclick="setAboutTab('${tb.k}')">${tb.l}</button>`).join("");
+  let content="";
+
+  if(aboutTab==="overview"){
+    content=`
+    <div style="position:relative;width:100%;height:420px;border-radius:12px;overflow:hidden;margin-bottom:20px">
+      <img src="${IMGS.cover}" style="width:100%;height:100%;object-fit:cover;object-position:center center" onerror="this.style.display='none'"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,#111 0%,transparent 60%)"></div>
+      <div style="position:absolute;bottom:16px;left:16px">
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px">Endless</div>
+        <div style="font-size:12px;color:#A3A3A3">${BAND.genre}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+      <div>
+        <div style="font-size:13px;color:#9D7AFF;font-style:italic;margin-bottom:12px;line-height:1.6">"${BAND.slogan}"</div>
+        <p style="font-size:13px;color:#A3A3A3;line-height:1.75;margin-bottom:14px">${BAND.desc}</p>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+          <div style="font-size:12px;color:#737373">🗓 成團日：<span style="color:#E5E5E5">${BAND.founded}</span></div>
+          <div style="font-size:12px;color:#737373">🎸 風格：<span style="color:#E5E5E5">${BAND.genre}</span></div>
+          <div style="font-size:12px;color:#737373">✉️ 聯繫：<a href="mailto:${BAND.email}" style="color:#7C3AED">${BAND.email}</a></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="${BAND.ig}" target="_blank" class="tag" style="color:#E1306C;background:#E1306C18;border:1px solid #E1306C33">@endless.band_official ↗</a>
+          <a href="${BAND.yt}" target="_blank" class="tag" style="color:#FF4444;background:#FF444418;border:1px solid #FF444433">YouTube ↗</a>
+          <a href="${BAND.sp}" target="_blank" class="tag" style="color:#1DB954;background:#1DB95418;border:1px solid #1DB95433">Spotify ↗</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:10px;letter-spacing:.5px">🏆 比賽經歷</div>
+        ${BAND.contests.map(c=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px"><span style="color:#F59E0B;flex-shrink:0">▸</span><span style="font-size:13px;color:#E5E5E5;line-height:1.5">${c}</span></div>`).join("")}
+        <div style="margin-top:14px;padding:12px;background:#1a1a1a;border-radius:10px;border:1px solid #262626">
+          <div style="font-size:11px;color:#737373;margin-bottom:6px">📊 IG 成長里程碑</div>
+          ${["2024.06 突破千人","2024.08 突破 2 千","2024.10 突破 3 千","2024.12 突破 4 千","2025.03 突破 5 千","2025.07 突破 6 千","2025 下半年 突破 1 萬"].map(m=>`<div style="font-size:12px;color:#A3A3A3;padding:3px 0">・${m}</div>`).join("")}
+        </div>
+      </div>
+    </div>`;
+
+  } else if(aboutTab==="members"){
+    content=`<div class="member-grid">${BAND.members.map(m=>`
+      <div class="mcard">
+        <div class="img-box" style="height:220px">
+          <img src="${IMGS.members[m.name]}" style="object-position:${MEMBER_POS[m.name]||'center center'}" onerror="this.parentElement.style.display='none'"/>
+        </div>
+        <div style="font-size:16px;font-weight:800;color:#fff">${m.name}</div>
+        <div style="font-size:11px;color:#7C3AED;margin-top:1px;margin-bottom:2px">${m.role}</div>
+        <div style="font-size:11px;color:#525252;margin-bottom:8px">${m.zodiac}</div>
+        <p style="font-size:12px;color:#A3A3A3;line-height:1.65;margin-bottom:10px">${m.bio}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${m.tags.map(tg=>`<span style="font-size:10px;background:#262626;color:#737373;border-radius:5px;padding:2px 7px">${tg}</span>`).join("")}</div>
+        <a href="${m.ig}" target="_blank" style="font-size:11px;color:#E1306C">Instagram ↗</a>
+      </div>`).join("")}</div>`;
+
+  } else if(aboutTab==="disc"){
+    const colors=["#7C3AED","#1DB954","#F59E0B","#EF4444","#EC4899","#3B82F6"];
+    content=`<div class="disc-grid">${BAND.discography.map((s,i)=>{
+      const c=colors[i%colors.length];
+      const img=IMGS.songs[s.title];
+      return`<div class="dcard" style="border-left:3px solid ${c}">
+        ${img?`<div class="img-box" style="height:140px"><img src="${img}" onerror="this.parentElement.style.display='none'"/></div>`:""}
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">${s.title}</div>
+        <div style="font-size:11px;color:#525252;margin-bottom:8px">${s.year}</div>
+        <p style="font-size:12px;color:#A3A3A3;line-height:1.65;margin-bottom:8px">${s.desc}</p>
+        <div style="font-size:11px;color:${c};background:${c}18;border-radius:5px;padding:4px 8px">${s.stats}</div>
+      </div>`;
+    }).join("")}</div>`;
+
+  } else if(aboutTab==="timeline"){
+    content=`
+    <div class="timeline">${BAND.timeline.map(item=>`
+      <div class="titem">
+        <div class="tdate">${item.d}</div>
+        <div class="tcontent">${item.t}</div>
+      </div>`).join("")}
+    </div>
+    <div style="margin-top:20px">
+      <div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:12px;letter-spacing:.5px">📸 演出紀錄</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">
+        <div class="img-box" style="height:220px"><img src="${IMGS.live1}" style="object-position:center center" onerror="this.parentElement.style.display='none'"/></div>
+        <div class="img-box" style="height:220px"><img src="${IMGS.live2}" style="object-position:center center" onerror="this.parentElement.style.display='none'"/></div>
+      </div>
+    </div>`;
+
+  } else if(aboutTab==="audience"){
+    content=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:16px">
+      ${[{icon:"⚧",label:"性別分佈",val:BAND.ta.gender},{icon:"🎂",label:"年齡分佈",val:BAND.ta.age},{icon:"🌏",label:"地區分佈",val:BAND.ta.region}].map(it=>`
+      <div class="card">
+        <div style="font-size:20px;margin-bottom:8px">${it.icon}</div>
+        <div style="font-size:12px;color:#737373;margin-bottom:6px;font-weight:600">${it.label}</div>
+        <div style="font-size:13px;color:#E5E5E5;line-height:1.65">${it.val}</div>
+      </div>`).join("")}
+      <div class="card" style="grid-column:1/-1">
+        <div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:8px">🎵 Spotify 歌單成效</div>
+        <div style="font-size:13px;color:#A3A3A3;line-height:1.75">每次新歌釋出均會被加入 <span style="color:#1DB954;font-weight:700">3～4 個 Spotify 官方歌單</span>，顯示演算法推薦效果穩定。目前亞洲市場發展潛力較歐美高，臺灣為最大聽眾市場（2,801 人），其後依序為新加坡、香港、馬來西亞。</div>
+      </div>
+    </div>
+    <div class="img-box" style="height:300px"><img src="${IMGS.liveGroup}" style="object-position:center 30%" onerror="this.parentElement.style.display='none'"/></div>`;
+  }
+
+  return`<div class="card" style="margin-bottom:18px">
+    <div class="tab-nav">${nav}</div>
+    <div class="fade-in">${content}</div>
+  </div>`;
+}
+window.setAboutTab=function(k){aboutTab=k;document.getElementById("aboutSec").innerHTML=renderAbout();};
+
 function kpiCard(id,icon,accent,label,value,deltaRaw,pending,histHtml){
-  var d=deltaRaw?fD(deltaRaw):null;
-  var dim=value==="—"?"#404040":"#E5E5E5";
-  return'<div class="kpi" id="kpi_'+id+'" onclick="toggleChart(\''+id+'\')">'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
-    +'<div style="display:flex;align-items:center;gap:8px">'
-    +'<div style="width:32px;height:32px;border-radius:8px;background:'+accent+'22;display:flex;align-items:center;justify-content:center;font-size:15px">'+icon+'</div>'
-    +'<span style="font-size:11px;color:#737373">'+label+'</span></div>'
-    +'<div style="display:flex;align-items:center;gap:5px">'
-    +(pending?'<span style="font-size:10px;color:#525252;background:#1F1F1F;border-radius:4px;padding:2px 6px">'+t("pend")+'</span>':"")
-    +'<span id="arr_'+id+'" style="font-size:10px;color:#525252">▼</span></div></div>'
-    +'<div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:'+dim+'">'+value+'</div>'
-    +(d?'<div style="font-size:12px;font-weight:600;margin-top:4px;color:'+d.c+'">'+d.s+' '+t("md")+'</div>':"")
-    +'<div id="ch_'+id+'" style="display:none"><div style="font-size:11px;color:#525252;margin:10px 0 2px">'+t("hist")+'</div>'+histHtml+'</div></div>';
+  const d=deltaRaw?fD(deltaRaw):null;
+  const dim=value==="—"?"#404040":"#E5E5E5";
+  return`<div class="kpi" onclick="toggleChart('${id}')">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:8px;background:${accent}22;display:flex;align-items:center;justify-content:center;font-size:15px">${icon}</div>
+        <span style="font-size:11px;color:#737373">${label}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        ${pending?`<span style="font-size:10px;color:#525252;background:#1F1F1F;border-radius:4px;padding:2px 6px">${t("pend")}</span>`:""}
+        <span id="arr_${id}" style="font-size:10px;color:#525252">▼</span>
+      </div>
+    </div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:${dim}">${value}</div>
+    ${d?`<div style="font-size:12px;font-weight:600;margin-top:4px;color:${d.c}">${d.s} ${t("md")}</div>`:""}
+    <div id="ch_${id}" style="display:none">
+      <div style="font-size:11px;color:#525252;margin:10px 0 2px">${t("hist")}</div>
+      ${histHtml}
+    </div>
+  </div>`;
 }
 window.toggleChart=function(id){
-  var el=document.getElementById("ch_"+id);
-  var ar=document.getElementById("arr_"+id);
+  const el=document.getElementById("ch_"+id);
+  const ar=document.getElementById("arr_"+id);
   if(!el)return;
-  var o=el.style.display==="none";
+  const o=el.style.display==="none";
   el.style.display=o?"block":"none";
   if(ar)ar.textContent=o?"▲":"▼";
 };
 
-function renderAbout(){
-  var tabs=[{k:"overview",l:"樂團概覽"},{k:"members",l:"成員介紹"},{k:"disc",l:"作品集"},{k:"timeline",l:"編年史"},{k:"audience",l:"受眾分析"}];
-  var nav=tabs.map(function(tb){return'<button class="tab'+(aboutTab===tb.k?" active":"")+'" onclick="setAboutTab(\''+tb.k+'\')">'+tb.l+'</button>';}).join("");
-  var content="";
-
-  if(aboutTab==="overview"){
-    content='<div style="position:relative;width:100%;height:420px;border-radius:12px;overflow:hidden;margin-bottom:20px">'
-      +'<img src="'+IMGS.cover+'" style="width:100%;height:100%;object-fit:cover;object-position:center center" onerror="this.style.display=\'none\'"/>'
-      +'<div style="position:absolute;inset:0;background:linear-gradient(to top,#111 0%,transparent 60%)"></div>'
-      +'<div style="position:absolute;bottom:16px;left:16px">'
-      +'<div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px">Endless</div>'
-      +'<div style="font-size:12px;color:#A3A3A3">'+BAND.genre+'</div></div></div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">'
-      +'<div>'
-      +'<div style="font-size:13px;color:#9D7AFF;font-style:italic;margin-bottom:12px;line-height:1.6">"'+BAND.slogan+'"</div>'
-      +'<p style="font-size:13px;color:#A3A3A3;line-height:1.75;margin-bottom:14px">'+BAND.desc+'</p>'
-      +'<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'
-      +'<div style="font-size:12px;color:#737373">🗓 成團日：<span style="color:#E5E5E5">'+BAND.founded+'</span></div>'
-      +'<div style="font-size:12px;color:#737373">🎸 風格：<span style="color:#E5E5E5">'+BAND.genre+'</span></div>'
-      +'<div style="font-size:12px;color:#737373">✉️ 聯繫：<a href="mailto:'+BAND.email+'" style="color:#7C3AED">'+BAND.email+'</a></div></div>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-      +'<a href="'+BAND.ig+'" target="_blank" class="tag" style="color:#E1306C;background:#E1306C18;border:1px solid #E1306C33">@endless.band_official ↗</a>'
-      +'<a href="'+BAND.yt+'" target="_blank" class="tag" style="color:#FF4444;background:#FF444418;border:1px solid #FF444433">YouTube ↗</a>'
-      +'<a href="'+BAND.sp+'" target="_blank" class="tag" style="color:#1DB954;background:#1DB95418;border:1px solid #1DB95433">Spotify ↗</a>'
-      +'</div></div>'
-      +'<div>'
-      +'<div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:10px;letter-spacing:.5px">🏆 比賽經歷</div>'
-      +BAND.contests.map(function(c){return'<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px"><span style="color:#F59E0B;flex-shrink:0">▸</span><span style="font-size:13px;color:#E5E5E5;line-height:1.5">'+c+'</span></div>';}).join("")
-      +'<div style="margin-top:14px;padding:12px;background:#1a1a1a;border-radius:10px;border:1px solid #262626">'
-      +'<div style="font-size:11px;color:#737373;margin-bottom:6px">📊 IG 成長里程碑</div>'
-      +["2024.06 突破千人","2024.08 突破 2 千","2024.10 突破 3 千","2024.12 突破 4 千","2025.03 突破 5 千","2025.07 突破 6 千","2025 下半年 突破 1 萬"].map(function(m){return'<div style="font-size:12px;color:#A3A3A3;padding:3px 0">・'+m+'</div>';}).join("")
-      +'</div></div></div>';
-
-  } else if(aboutTab==="members"){
-    content='<div class="member-grid">'+BAND.members.map(function(m){
-      var img=IMGS.members[m.name];
-      return'<div class="mcard">'
-        +(img?'<div style="width:100%;height:220px;border-radius:8px;overflow:hidden;margin-bottom:10px"><img src="'+img+'" style="width:100%;height:100%;object-fit:cover;object-position:'+m.pos+'" onerror="this.parentElement.style.display=\'none\'"/></div>':"")
-        +'<div style="font-size:16px;font-weight:800;color:#fff">'+m.name+'</div>'
-        +'<div style="font-size:11px;color:#7C3AED;margin-top:1px">'+m.role+'</div>'
-        +'<div style="font-size:11px;color:#525252;margin-bottom:8px">'+m.zodiac+'</div>'
-        +'<p style="font-size:12px;color:#A3A3A3;line-height:1.65;margin-bottom:10px">'+m.bio+'</p>'
-        +'<div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px">'+m.tags.map(function(tg){return'<span style="font-size:10px;background:#262626;color:#737373;border-radius:5px;padding:2px 7px">'+tg+'</span>';}).join("")+'</div>'
-        +'<a href="'+m.ig+'" target="_blank" style="font-size:11px;color:#E1306C">Instagram ↗</a>'
-        +'</div>';
-    }).join("")+'</div>';
-
-  } else if(aboutTab==="disc"){
-    var colors=["#7C3AED","#1DB954","#F59E0B","#EF4444","#EC4899","#3B82F6"];
-    content='<div class="disc-grid">'+BAND.discography.map(function(s,i){
-      var c=colors[i%colors.length];
-      var img=IMGS.songs[s.title];
-      return'<div class="dcard" style="border-left:3px solid '+c+'">'
-        +(img?'<div style="width:100%;height:140px;border-radius:8px;overflow:hidden;margin-bottom:10px"><img src="'+img+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display=\'none\'"/></div>':"")
-        +'<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">'+s.title+'</div>'
-        +'<div style="font-size:11px;color:#525252;margin-bottom:8px">'+s.year+'</div>'
-        +'<p style="font-size:12px;color:#A3A3A3;line-height:1.65;margin-bottom:8px">'+s.desc+'</p>'
-        +'<div style="font-size:11px;color:'+c+';background:'+c+'18;border-radius:5px;padding:4px 8px">'+s.stats+'</div>'
-        +'</div>';
-    }).join("")+'</div>';
-
-  } else if(aboutTab==="timeline"){
-    content='<div class="timeline">'+BAND.timeline.map(function(item){
-      return'<div class="titem"><div class="tdate">'+item.d+'</div><div class="tcontent">'+item.t+'</div></div>';
-    }).join("")+'</div>'
-    +'<div style="margin-top:20px">'
-    +'<div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:12px;letter-spacing:.5px">📸 演出紀錄</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">'
-    +'<div style="border-radius:10px;overflow:hidden;height:200px"><img src="'+IMGS.live1+'" style="width:100%;height:100%;object-fit:cover;object-position:center center" onerror="this.parentElement.style.display=\'none\'"/></div>'
-    +'<div style="border-radius:10px;overflow:hidden;height:200px"><img src="'+IMGS.live2+'" style="width:100%;height:100%;object-fit:cover;object-position:center center" onerror="this.parentElement.style.display=\'none\'"/></div>'
-    +'</div></div>';
-
-  } else if(aboutTab==="audience"){
-    content='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">'
-      +[{icon:"⚧",label:"性別分佈",val:BAND.ta.gender},{icon:"🎂",label:"年齡分佈",val:BAND.ta.age},{icon:"🌏",label:"地區分佈",val:BAND.ta.region}].map(function(it){
-        return'<div class="card"><div style="font-size:20px;margin-bottom:8px">'+it.icon+'</div><div style="font-size:12px;color:#737373;margin-bottom:6px;font-weight:600">'+it.label+'</div><div style="font-size:13px;color:#E5E5E5;line-height:1.65">'+it.val+'</div></div>';
-      }).join("")
-      +'<div class="card" style="grid-column:1/-1">'
-      +'<div style="font-size:12px;color:#737373;font-weight:600;margin-bottom:8px">🎵 Spotify 歌單成效</div>'
-      +'<div style="font-size:13px;color:#A3A3A3;line-height:1.75;margin-bottom:14px">每次新歌釋出均會被加入 <span style="color:#1DB954;font-weight:700">3～4 個 Spotify 官方歌單</span>，顯示演算法推薦效果穩定。目前亞洲市場發展潛力較歐美高，臺灣為最大聽眾市場（2,801 人），其後依序為新加坡、香港、馬來西亞。</div>'
-      +'<div style="border-radius:12px;overflow:hidden;height:280px"><img src="'+IMGS.liveGroup+'" style="width:100%;height:100%;object-fit:cover;object-position:center 30%" onerror="this.parentElement.style.display=\'none\'"/></div>'
-      +'</div></div>';
-  }
-
-  return'<div class="card" style="margin-bottom:18px"><div class="tab-nav">'+nav+'</div><div class="fade-in">'+content+'</div></div>';
-}
-window.setAboutTab=function(k){aboutTab=k;document.getElementById("aboutSec").innerHTML=renderAbout();};
-
 window.genAI=async function(){
-  var btn=document.getElementById("aibtn");
-  var res=document.getElementById("aires");
+  const btn=document.getElementById("aibtn");
+  const res=document.getElementById("aires");
   if(!btn||!res)return;
   btn.disabled=true;
-  btn.innerHTML='<span class="spinner"></span>'+t("aiLoad");
-  res.innerHTML='<div style="color:#525252;font-size:12px;padding:20px 0;text-align:center">'+t("aiLoad")+'</div>';
-  var agg=buildAgg(allRows);
-  var m="IG粉絲:"+(agg["IG 粉絲數"]||"未填")+" Spotify月聽眾:"+(agg["Spotify 月聽眾量"]||"未填")+" YouTube訂閱:"+(agg["YouTube 訂閱數"]||"未填")+" YT總觀看:"+(agg["YouTube 總觀看量"]||"未填")+" 媒體報導:"+(agg["媒體新聞牆"]||"無");
-  var sys=lang==="zh"?"你是台灣獨立音樂的資深行銷顧問。樂團 Endless 是台灣 Modern Metalcore 樂團，以 Hyperpop/EDM 元素融合著稱，聽眾以 25-34 歲男性為主。根據當月數據，分兩區塊回覆：\n【快速建議】3條立即可執行的具體行動（每條一行，數字編號，50字內）\n【深度分析】2~3段洞察，含數據解讀、市場機會、中長期策略。繁體中文，語氣專業親切。":"You are a senior music marketing consultant for Taiwanese indie band Endless (Modern Metalcore/Hyperpop). Reply:\n[Quick Tips] 3 immediately actionable items (numbered)\n[Deep Analysis] 2-3 paragraphs of insights.";
+  btn.innerHTML=`<span class="spinner"></span>${t("aiLoad")}`;
+  res.innerHTML=`<div style="color:#525252;font-size:12px;padding:20px 0;text-align:center">${t("aiLoad")}</div>`;
+  const agg=buildAgg(allRows);
+  const m=`IG粉絲:${agg["IG 粉絲數"]||"未填"}(月增:${agg["IG 月增減"]||"—"}) Spotify月聽眾:${agg["Spotify 月聽眾量"]||"未填"} YouTube訂閱:${agg["YouTube 訂閱數"]||"未填"}(月增:${agg["YouTube 月訂閱增減"]||"—"}) YT總觀看:${agg["YouTube 總觀看量"]||"未填"} 媒體報導:${agg["媒體新聞牆"]||"無"}`;
+  const sys=lang==="zh"?`你是台灣獨立音樂的資深行銷顧問。樂團 Endless 是台灣 Modern Metalcore 樂團，以 Hyperpop/EDM 元素融合著稱，聽眾以 25-34 歲男性為主。根據當月數據，分兩區塊回覆：\n【快速建議】3條立即可執行的具體行動（每條一行，數字編號，50字內）\n【深度分析】2~3段洞察，含數據解讀、市場機會、中長期策略。繁體中文，語氣專業親切。`:`You are a senior music marketing consultant for Taiwanese indie band Endless (Modern Metalcore/Hyperpop). Reply in two sections:\n[Quick Tips] 3 immediately actionable items (numbered, one line each)\n[Deep Analysis] 2-3 paragraphs of insights. Professional English.`;
   try{
-    var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sys,messages:[{role:"user",content:"Endless 本月數據："+m}]})});
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sys,messages:[{role:"user",content:`Endless 本月數據：${m}`}]})});
     if(!r.ok)throw new Error("API "+r.status);
-    var data=await r.json();
-    var text=(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
-    var qm=text.match(/【快速建議】([\s\S]*?)(?=【深度分析】|$)/)||text.match(/\[Quick Tips\]([\s\S]*?)(?=\[Deep Analysis\]|$)/);
-    var dm=text.match(/【深度分析】([\s\S]*?)$/)||text.match(/\[Deep Analysis\]([\s\S]*?)$/);
-    var qL=(qm&&qm[1]||"").trim().split("\n").filter(Boolean);
-    var dT=(dm&&dm[1]||"").trim();
-    var html="";
-    if(qL.length){
-      html+='<div style="font-size:11px;color:#F59E0B;font-weight:600;letter-spacing:.5px;margin-bottom:8px">⚡ '+t("quick")+'</div>';
-      html+=qL.map(function(l,i){return'<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px"><div style="width:18px;height:18px;border-radius:5px;background:#F59E0B22;color:#F59E0B;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">'+(i+1)+'</div><div style="font-size:13px;color:#E5E5E5;line-height:1.6">'+l.replace(/^\d+[.、]/,"").trim()+'</div></div>';}).join("");
-    }
-    if(dT){
-      html+='<div style="font-size:11px;color:#7C3AED;font-weight:600;letter-spacing:.5px;margin:14px 0 8px">🔍 '+t("deep")+'</div>';
-      html+=dT.split(/\n\n+/).filter(Boolean).map(function(p){return'<p style="font-size:13px;color:#A3A3A3;line-height:1.75;margin-bottom:10px">'+p.trim()+'</p>';}).join("");
-    }
-    if(!html)html='<p style="font-size:13px;color:#A3A3A3;line-height:1.75;white-space:pre-wrap">'+text+'</p>';
-    res.innerHTML='<div class="fade-in">'+html+'</div>';
-  }catch(e){
-    res.innerHTML='<div style="color:#EF4444;font-size:12px">AI 服務暫時無法使用：'+e.message+'</div>';
-  }finally{
-    btn.disabled=false;btn.innerHTML=t("aiBtn");
-  }
+    const data=await r.json();
+    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+    const qm=text.match(/【快速建議】([\s\S]*?)(?=【深度分析】|$)/)||text.match(/\[Quick Tips\]([\s\S]*?)(?=\[Deep Analysis\]|$)/);
+    const dm=text.match(/【深度分析】([\s\S]*?)$/)||text.match(/\[Deep Analysis\]([\s\S]*?)$/);
+    const qL=(qm?.[1]||"").trim().split("\n").filter(Boolean);
+    const dT=(dm?.[1]||"").trim();
+    let html="";
+    if(qL.length){html+=`<div style="font-size:11px;color:#F59E0B;font-weight:600;letter-spacing:.5px;margin-bottom:8px">⚡ ${t("quick")}</div>`;html+=qL.map((l,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px"><div style="width:18px;height:18px;border-radius:5px;background:#F59E0B22;color:#F59E0B;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</div><div style="font-size:13px;color:#E5E5E5;line-height:1.6">${l.replace(/^\d+[.、]/,"").trim()}</div></div>`).join("");}
+    if(dT){html+=`<div style="font-size:11px;color:#7C3AED;font-weight:600;letter-spacing:.5px;margin:14px 0 8px">🔍 ${t("deep")}</div>`;html+=dT.split(/\n\n+/).filter(Boolean).map(p=>`<p style="font-size:13px;color:#A3A3A3;line-height:1.75;margin-bottom:10px">${p.trim()}</p>`).join("");}
+    if(!html)html=`<p style="font-size:13px;color:#A3A3A3;line-height:1.75;white-space:pre-wrap">${text}</p>`;
+    res.innerHTML=`<div class="fade-in">${html}</div>`;
+  }catch(e){res.innerHTML=`<div style="color:#EF4444;font-size:12px">AI 服務暫時無法使用：${e.message}</div>`;}
+  finally{btn.disabled=false;btn.innerHTML=t("aiBtn");}
 };
 
 function render(){
   document.getElementById("hSub").textContent=t("sub");
   document.getElementById("lBtn").textContent=t("lb");
   if(!allRows.length)return;
-  var agg=buildAgg(allRows);
-  var hist=buildHist(allRows);
-  var srch=document.getElementById("srch").value.toLowerCase();
-  var press=parsePress(agg["媒體新聞牆"]);
-  var top3=parseList(agg["Spotify 本月熱門 Top 3"]);
-  var pls=parseList(agg["Spotify 指標歌單紀錄"]);
-  var fp=srch?press.filter(function(p){return(p.title+p.source).toLowerCase().indexOf(srch)>=0;}):press;
-  var igP=!agg["IG 粉絲數"]||parseInt(agg["IG 粉絲數"]||0)===0;
-  var spP=!agg["Spotify 月聽眾量"]||parseInt(agg["Spotify 月聽眾量"]||0)===0;
+  const agg=buildAgg(allRows);
+  const hist=buildHist(allRows);
+  const srch=document.getElementById("srch").value.toLowerCase();
+  const press=parsePress(agg["媒體新聞牆"]);
+  const top3=parseList(agg["Spotify 本月熱門 Top 3"]);
+  const pls=parseList(agg["Spotify 指標歌單紀錄"]);
+  const fp=srch?press.filter(p=>(p.title+p.source).toLowerCase().includes(srch)):press;
+  const igP=!agg["IG 粉絲數"]||parseInt(agg["IG 粉絲數"]||0)===0;
+  const spP=!agg["Spotify 月聽眾量"]||parseInt(agg["Spotify 月聽眾量"]||0)===0;
 
-  var html='<div id="aboutSec">'+renderAbout()+'</div>'
-    +'<div class="g4">'
-    +kpiCard("ig","📷","#E1306C",t("ig"),fN(agg["IG 粉絲數"]),agg["IG 月增減"],igP,miniChart(hist,"ig","#E1306C"))
-    +kpiCard("sp","🎵","#1DB954",t("sp"),fN(agg["Spotify 月聽眾量"]),agg["Spotify 月聽眾量增減"],spP,miniChart(hist,"sp","#1DB954"))
-    +kpiCard("ytS","▶","#FF4444",t("ytS"),fN(agg["YouTube 訂閱數"]),agg["YouTube 月訂閱增減"],false,miniChart(hist,"ytS","#FF4444"))
-    +kpiCard("ytT","📊","#F59E0B",t("ytT"),fN(agg["YouTube 總觀看量"]),null,false,miniChart(hist,"ytT","#F59E0B"))
-    +'</div>'
-    +'<div class="g2">'
-    +'<div class="card"><div style="display:flex;align-items:center;gap:7px;margin-bottom:12px"><span>🎵</span><span style="font-weight:700;font-size:13px">'+t("top3")+'</span></div>'
-    +(top3.length?top3.map(function(tr,i){return'<div style="display:flex;align-items:center;gap:9px;padding:7px 0;'+(i<top3.length-1?"border-bottom:1px solid #1F1F1F":"")+'">'+'<span style="width:20px;height:20px;border-radius:5px;background:#1DB95422;color:#1DB954;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</span><span style="font-size:13px;color:#E5E5E5">'+tr+'</span></div>';}).join(""):'<div style="color:#525252;font-size:13px">'+t("noData")+'</div>')
-    +'</div>'
-    +'<div class="card"><div style="display:flex;align-items:center;gap:7px;margin-bottom:12px"><span>📋</span><span style="font-weight:700;font-size:13px">'+t("pl")+'</span></div>'
-    +(pls.length?pls.map(function(l,i){return'<div style="font-size:12px;color:#A3A3A3;line-height:1.7;padding:5px 0;'+(i<pls.length-1?"border-bottom:1px solid #1F1F1F":"")+'">'+ l+'</div>';}).join(""):'<div style="color:#525252;font-size:13px">'+t("noData")+'</div>')
-    +'</div></div>'
-    +'<div class="gp">'
-    +'<div>'
-    +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:12px"><span>📰</span><span style="font-weight:700;font-size:13px">'+t("press")+'</span><span style="font-size:10px;color:#525252;background:#1F1F1F;border-radius:4px;padding:2px 6px">'+fp.length+'</span></div>'
-    +(fp.length?fp.map(function(item){return'<div class="pcard"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#E5E5E5;line-height:1.5;margin-bottom:3px">'+item.title+'</div>'+(item.source?'<div style="font-size:11px;color:#525252">'+item.source+'</div>':"")+'</div>'+(item.url?'<a href="'+item.url+'" target="_blank" style="color:#7C3AED;flex-shrink:0;font-size:14px">↗</a>':"")+'</div></div>';}).join(""):'<div style="color:#525252;font-size:13px;padding:28px 0;text-align:center">'+t("noData")+'</div>')
-    +'</div>'
-    +'<div class="card">'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div style="display:flex;align-items:center;gap:7px"><span>💡</span><span style="font-weight:700;font-size:13px">'+t("camp")+'</span></div><button id="aibtn" class="btn btnp" onclick="genAI()">'+t("aiBtn")+'</button></div>'
-    +'<div id="aires" style="color:#525252;font-size:12px;text-align:center;padding:20px 0">'+t("aiPh")+'</div>'
-    +'</div></div>';
+  document.getElementById("main").innerHTML=`
+  <div id="aboutSec">${renderAbout()}</div>
+  <div class="g4">
+    ${kpiCard("ig","📷","#E1306C",t("ig"),fN(agg["IG 粉絲數"]),agg["IG 月增減"],igP,miniChart(hist,"ig","#E1306C"))}
+    ${kpiCard("sp","🎵","#1DB954",t("sp"),fN(agg["Spotify 月聽眾量"]),agg["Spotify 月聽眾量增減"],spP,miniChart(hist,"sp","#1DB954"))}
+    ${kpiCard("ytS","▶","#FF4444",t("ytS"),fN(agg["YouTube 訂閱數"]),agg["YouTube 月訂閱增減"],false,miniChart(hist,"ytS","#FF4444"))}
+    ${kpiCard("ytT","📊","#F59E0B",t("ytT"),fN(agg["YouTube 總觀看量"]),null,false,miniChart(hist,"ytT","#F59E0B"))}
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px"><span>🎵</span><span style="font-weight:700;font-size:13px">${t("top3")}</span></div>
+      ${top3.length?top3.map((tr,i)=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;${i<top3.length-1?"border-bottom:1px solid #1F1F1F":""}"><span style="width:20px;height:20px;border-radius:5px;background:#1DB95422;color:#1DB954;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span><span style="font-size:13px;color:#E5E5E5">${tr}</span></div>`).join(""):`<div style="color:#525252;font-size:13px">${t("noData")}</div>`}
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px"><span>📋</span><span style="font-weight:700;font-size:13px">${t("pl")}</span></div>
+      ${pls.length?pls.map((l,i)=>`<div style="font-size:12px;color:#A3A3A3;line-height:1.7;padding:5px 0;${i<pls.length-1?"border-bottom:1px solid #1F1F1F":""}">${l}</div>`).join(""):`<div style="color:#525252;font-size:13px">${t("noData")}</div>`}
+    </div>
+  </div>
+  <div class="gp">
+    <div>
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px">
+        <span>📰</span><span style="font-weight:700;font-size:13px">${t("press")}</span>
+        <span style="font-size:10px;color:#525252;background:#1F1F1F;border-radius:4px;padding:2px 6px">${fp.length}</span>
+      </div>
+      ${fp.length?fp.map(item=>`<div class="pcard"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#E5E5E5;line-height:1.5;margin-bottom:3px">${item.title}</div>${item.source?`<div style="font-size:11px;color:#525252">${item.source}</div>`:""}</div>${item.url?`<a href="${item.url}" target="_blank" style="color:#7C3AED;flex-shrink:0;font-size:14px">↗</a>`:""}</div></div>`).join(""):`<div style="color:#525252;font-size:13px;padding:28px 0;text-align:center">${t("noData")}</div>`}
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:7px"><span>💡</span><span style="font-weight:700;font-size:13px">${t("camp")}</span></div>
+        <button id="aibtn" class="btn btnp" onclick="genAI()">${t("aiBtn")}</button>
+      </div>
+      <div id="aires" style="color:#525252;font-size:12px;text-align:center;padding:20px 0">${t("aiPh")}</div>
+    </div>
+  </div>`;
 
-  document.getElementById("main").innerHTML=html;
   document.getElementById("main").style.display="block";
   document.getElementById("main").className="fade-in";
 }
@@ -445,7 +458,7 @@ window.loadData=async function(){
   document.getElementById("loading").style.display="flex";
   document.getElementById("main").style.display="none";
   try{
-    var res=await fetch(GAS);
+    const res=await fetch(GAS);
     if(!res.ok)throw new Error("HTTP "+res.status);
     allRows=await res.json();
     if(!Array.isArray(allRows))allRows=[];
@@ -453,11 +466,11 @@ window.loadData=async function(){
     document.getElementById("loading").style.display="none";
     render();
   }catch(e){
-    document.getElementById("loading").innerHTML='<div style="text-align:center"><div style="font-size:26px;margin-bottom:12px">⚠️</div><div style="color:#737373;font-size:13px;margin-bottom:6px">'+t("err")+'</div><div style="color:#404040;font-size:11px;margin-bottom:14px">'+e.message+'</div><button class="btn btnp" onclick="loadData()">'+t("retry")+'</button></div>';
+    document.getElementById("loading").innerHTML=`<div style="text-align:center"><div style="font-size:26px;margin-bottom:12px">⚠️</div><div style="color:#737373;font-size:13px;margin-bottom:6px">${t("err")}</div><div style="color:#404040;font-size:11px;margin-bottom:14px">${e.message}</div><button class="btn btnp" onclick="loadData()">${t("retry")}</button></div>`;
   }
 };
 window.toggleLang=function(){lang=lang==="zh"?"en":"zh";render();};
-document.getElementById("srch").addEventListener("input",function(){if(allRows.length)render();});
+document.getElementById("srch").addEventListener("input",()=>{if(allRows.length)render();});
 loadData();
 </script>
 </body>

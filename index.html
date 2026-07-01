@@ -483,10 +483,25 @@ window.loadData=async function(){
   document.getElementById("loading").style.display="flex";
   document.getElementById("main").style.display="none";
   try{
-    const res=await fetch(GAS);
-    if(!res.ok)throw new Error("HTTP "+res.status);
-    allRows=await res.json();
-    if(!Array.isArray(allRows))allRows=[];
+    const data = await new Promise((resolve, reject) => {
+      const cb = "_cb_" + Date.now();
+      const script = document.createElement("script");
+      const timer = setTimeout(() => {
+        delete window[cb];
+        document.body.removeChild(script);
+        reject(new Error("Timeout"));
+      }, 10000);
+      window[cb] = function(d) {
+        clearTimeout(timer);
+        delete window[cb];
+        document.body.removeChild(script);
+        resolve(d);
+      };
+      script.src = GAS + "?callback=" + cb;
+      script.onerror = () => { clearTimeout(timer); reject(new Error("Script error")); };
+      document.body.appendChild(script);
+    });
+    allRows = Array.isArray(data) ? data : [];
     document.getElementById("hUpd").textContent=t("upd")+": "+new Date().toLocaleDateString("zh-TW");
     document.getElementById("loading").style.display="none";
     render();

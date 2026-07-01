@@ -258,10 +258,28 @@ function renderAbout(){
           <div style="font-size:12px;color:#737373">🎸 風格：<span style="color:#E5E5E5">${BAND.genre}</span></div>
           <div style="font-size:12px;color:#737373">✉️ 聯繫：<a href="mailto:${BAND.email}" style="color:#7C3AED">${BAND.email}</a></div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a href="${BAND.ig}" target="_blank" class="tag" style="color:#E1306C;background:#E1306C18;border:1px solid #E1306C33">@endless.band_official ↗</a>
-          <a href="${BAND.yt}" target="_blank" class="tag" style="color:#FF4444;background:#FF444418;border:1px solid #FF444433">YouTube ↗</a>
-          <a href="${BAND.sp}" target="_blank" class="tag" style="color:#1DB954;background:#1DB95418;border:1px solid #1DB95433">Spotify ↗</a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative">
+          ${[
+            {label:"@endless.band_official",url:BAND.ig,color:"#E1306C",id:"tip-ig",
+             stats:[{i:"👥",v:fN(agg["IG 粉絲數"])+"粉絲"},{i:"📸",v:"155 貼文"},{i:"📈",v:fN(agg["IG 月增減"])+" 月增減"}]},
+            {label:"YouTube",url:BAND.yt,color:"#FF4444",id:"tip-yt",
+             stats:[{i:"👥",v:fN(agg["YouTube 訂閱數"])+" 訂閱"},{i:"▶",v:fN(agg["YouTube 總觀看量"])+" 總觀看"},{i:"📈",v:fN(agg["YouTube 月訂閱增減"])+" 月增減"}]},
+            {label:"Spotify",url:BAND.sp,color:"#1DB954",id:"tip-sp",
+             stats:[{i:"🎧",v:fN(agg["Spotify 月聽眾量"])+" 月聽眾"},{i:"🎵",v:"空氣一樣的我・沉沒・怪物"},{i:"📋",v:"每次新歌收入 3~4 官方歌單"}]},
+          ].map(p=>`
+            <div style="position:relative;display:inline-block"
+              onmouseenter="document.getElementById('${p.id}').style.display='block'"
+              onmouseleave="document.getElementById('${p.id}').style.display='none'">
+              <a href="${p.url}" target="_blank" class="tag" style="color:${p.color};background:${p.color}18;border:1px solid ${p.color}33;display:inline-block">${p.label} ↗</a>
+              <div id="${p.id}" style="display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:999;background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:12px 14px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+                <div style="font-size:11px;color:${p.color};font-weight:700;margin-bottom:8px">${p.label}</div>
+                ${p.stats.map(s=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px">
+                  <span style="font-size:12px">${s.i}</span>
+                  <span style="font-size:12px;color:#E5E5E5">${s.v}</span>
+                </div>`).join("")}
+                <div style="font-size:10px;color:#525252;margin-top:8px;border-top:1px solid #262626;padding-top:6px">點擊前往頁面 ↗</div>
+              </div>
+            </div>`).join("")}
         </div>
       </div>
       <div>
@@ -340,7 +358,12 @@ function renderAbout(){
     <div class="fade-in">${content}</div>
   </div>`;
 }
-window.setAboutTab=function(k){aboutTab=k;document.getElementById("aboutSec").innerHTML=renderAbout();};
+window.setAboutTab=function(k){
+  aboutTab=k;
+  document.getElementById("aboutSec").innerHTML=renderAbout();
+  const db=document.getElementById("dataBlock");
+  if(db)db.style.display=k==="overview"?"block":"none";
+};
 
 function kpiCard(id,icon,accent,label,value,deltaRaw,pending,histHtml){
   const d=deltaRaw?fD(deltaRaw):null;
@@ -417,6 +440,7 @@ function render(){
 
   document.getElementById("main").innerHTML=`
   <div id="aboutSec">${renderAbout()}</div>
+  <div id="dataBlock">
   <div class="g4">
     ${kpiCard("ig","📷","#E1306C",t("ig"),fN(agg["IG 粉絲數"]),agg["IG 月增減"],igP,miniChart(hist,"ig","#E1306C"))}
     ${kpiCard("sp","🎵","#1DB954",t("sp"),fN(agg["Spotify 月聽眾量"]),agg["Spotify 月聽眾量增減"],spP,miniChart(hist,"sp","#1DB954"))}
@@ -448,6 +472,7 @@ function render(){
       </div>
       <div id="aires" style="color:#525252;font-size:12px;text-align:center;padding:20px 0">${t("aiPh")}</div>
     </div>
+  </div>
   </div>`;
 
   document.getElementById("main").style.display="block";

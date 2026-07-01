@@ -87,7 +87,7 @@ header{position:sticky;top:0;background:rgba(10,10,10,.94);backdrop-filter:blur(
 </div>
 
 <script>
-const GAS="https://docs.google.com/spreadsheets/d/1yQHI9VopLZMBy8qcfGA85TyAv6jKX3GaXYmszvqxbx0/gviz/tq?tqx=out:json&sheet=Sheet1";
+const GAS="https://docs.google.com/spreadsheets/d/1yQHI9VopLZMBy8qcfGA85TyAv6jKX3GaXYmszvqxbx0/gviz/tq?tqx=out:json";
 
 function gd(id){return"https://drive.google.com/thumbnail?id="+id+"&sz=w1200";}
 const IMGS={
@@ -489,9 +489,21 @@ window.loadData=async function(){
     // Google Visualization API 回傳格式：/*O_o*/\ngoogle.visualization.Query.setResponse({...})
     const json=JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
     const cols=json.table.cols.map(c=>c.label);
-    allRows=json.table.rows.map(r=>({
-      ...Object.fromEntries(cols.map((c,i)=>[c, r.c[i]?r.c[i].v:""]))
-    }));
+    allRows=json.table.rows.map(r=>{
+      const obj={};
+      cols.forEach((c,i)=>{
+        const cell=r.c[i];
+        if(!cell||cell.v===null||cell.v===undefined){obj[c]="";return;}
+        // 日期格式 Date(yyyy,m,d) 轉成 yyyy/m+1
+        if(typeof cell.v==="string"&&cell.v.startsWith("Date(")){
+          const parts=cell.v.replace("Date(","").replace(")","").split(",");
+          obj[c]=`${parts[0]}/${parseInt(parts[1])+1}`;
+        } else {
+          obj[c]=cell.f!==undefined?cell.f:cell.v;
+        }
+      });
+      return obj;
+    });
     document.getElementById("hUpd").textContent=t("upd")+": "+new Date().toLocaleDateString("zh-TW");
     document.getElementById("loading").style.display="none";
     render();
